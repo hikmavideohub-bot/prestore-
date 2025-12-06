@@ -193,14 +193,18 @@
         let productsData = [];
         let activeCategory = 'الكل';
 
-        // --- دالة تحويل روابط جوجل درايف تلقائياً ---
+        // --- دالة جديدة ومحسنة: تستخدم رابط Thumbnail السريع والمضمون ---
         function convertDriveLink(url) {
             if (!url) return null;
+            // التحقق مما إذا كان الرابط من جوجل درايف
             if (url.includes('drive.google.com')) {
+                // استخراج معرف الصورة (ID)
                 const idMatch = url.match(/\/d\/(.*?)\/|id=(.*?)(&|$)/);
                 if (idMatch) {
                     const id = idMatch[1] || idMatch[2];
-                    return `https://drive.google.com/uc?export=view&id=${id}`;
+                    // استخدام رابط thumbnail مع تحديد الحجم (w1000 يعني عرض 1000 بكسل)
+                    // هذا الرابط يتجاوز مشاكل الحظر ويعمل بسرعة
+                    return `https://drive.google.com/thumbnail?id=${id}&sz=w1000`;
                 }
             }
             return url;
@@ -307,11 +311,12 @@
                 let btnText = isInactive ? 'نفذت الكمية' : '<i class="fas fa-plus"></i> أضف';
                 let btnClick = isInactive ? '' : `onclick="addToCart('${p.id || p.name}')"`;
 
+                // تمت إضافة referrerpolicy="no-referrer" لمنع حظر جوجل
                 grid.innerHTML += `
                     <div class="${cardClass}">
                         ${badgeHTML}
                         ${inactiveBadge}
-                        <img src="${imgSrc}" class="product-image" loading="lazy" alt="${p.name}">
+                        <img src="${imgSrc}" class="product-image" loading="lazy" alt="${p.name}" referrerpolicy="no-referrer">
                         <div class="product-info">
                             <div class="product-title">${p.name}</div>
                             <div class="product-desc">${p.description || ''}</div>
