@@ -7,33 +7,111 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* ... (نفس الستايلات السابقة تماماً) ... */
-        :root { --primary-color: #2c3e50; --accent-color: #e67e22; --green-color: #27ae60; --red-color: #c0392b; --bg-color: #f4f7f6; --card-bg: #ffffff; }
-        body { font-family: 'Tajawal', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; color: #333; padding-bottom: 80px; }
-        header { background-color: var(--primary-color); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .logo h1 { margin: 0; font-size: 1.5rem; } .logo p { margin: 0; font-size: 0.8rem; opacity: 0.8; }
+        /* ... (نفس الستايلات السابقة) ... */
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #e67e22;
+            --green-color: #27ae60;
+            --red-color: #c0392b;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            color: #333;
+            padding-bottom: 80px;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .logo h1 { margin: 0; font-size: 1.5rem; }
+        .logo p { margin: 0; font-size: 0.8rem; opacity: 0.8; }
+
         .cart-icon-container { position: relative; cursor: pointer; font-size: 1.5rem; }
-        .cart-badge { position: absolute; top: -8px; right: -10px; background-color: var(--accent-color); color: white; border-radius: 50%; padding: 4px 8px; font-size: 0.8rem; font-weight: bold; }
-        .category-nav { background: #fff; padding: 10px; overflow-x: auto; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: sticky; top: 70px; z-index: 99; }
-        .cat-btn { display: inline-block; background: #f0f0f0; padding: 8px 16px; border-radius: 20px; margin-left: 10px; cursor: pointer; transition: 0.3s; }
+        .cart-badge {
+            position: absolute; top: -8px; right: -10px;
+            background-color: var(--accent-color); color: white;
+            border-radius: 50%; padding: 4px 8px; font-size: 0.8rem; font-weight: bold;
+        }
+
+        .category-nav {
+            background: #fff; padding: 10px; overflow-x: auto; white-space: nowrap;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: sticky; top: 70px; z-index: 99;
+        }
+
+        .cat-btn {
+            display: inline-block; background: #f0f0f0; padding: 8px 16px;
+            border-radius: 20px; margin-left: 10px; cursor: pointer; transition: 0.3s;
+        }
         .cat-btn.active { background: var(--primary-color); color: white; }
+
         .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
-        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
-        .product-card { background: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; flex-direction: column; position: relative; }
-        .product-card.inactive { opacity: 0.7; filter: grayscale(1); border: 2px dashed #999; background-color: #f0f0f0; }
-        .product-card.inactive .add-btn { background-color: #999; pointer-events: none; }
-        .discount-badge { position: absolute; top: 10px; right: 10px; background-color: var(--red-color); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
-        .inactive-badge { position: absolute; top: 10px; left: 10px; background-color: #333; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; z-index: 2; }
+
+        .products-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px;
+        }
+
+        .product-card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; flex-direction: column; position: relative;
+        }
+
+        /* ستايل المنتجات غير النشطة */
+        .product-card.inactive {
+            opacity: 0.7;
+            filter: grayscale(1);
+            border: 2px dashed #999;
+            background-color: #f0f0f0;
+        }
+        .product-card.inactive .add-btn {
+            background-color: #999;
+            pointer-events: none; /* منع الضغط */
+        }
+
+        .discount-badge {
+            position: absolute; top: 10px; right: 10px; background-color: var(--red-color);
+            color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;
+        }
+        
+        /* شارة غير نشط */
+        .inactive-badge {
+            position: absolute; top: 10px; left: 10px; background-color: #333;
+            color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;
+            z-index: 2;
+        }
+
         .product-image { width: 100%; height: 150px; object-fit: cover; background-color: #eee; }
         .product-info { padding: 10px; display: flex; flex-direction: column; flex-grow: 1; }
         .product-title { font-size: 1rem; font-weight: bold; margin-bottom: 5px; }
         .product-desc { font-size: 0.8rem; color: #666; margin-bottom: 10px; flex-grow: 1; }
         .product-footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 10px; }
+        
         .price-old { text-decoration: line-through; color: #999; font-size: 0.8rem; }
         .price-new { font-weight: bold; color: var(--primary-color); font-size: 1.1rem; }
         .price-new.has-discount { color: var(--red-color); }
-        .add-btn { background-color: var(--primary-color); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+
+        .add-btn {
+            background-color: var(--primary-color); color: white; border: none;
+            padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: 0.2s;
+        }
         .add-btn:active { transform: scale(0.95); }
+
+        /* Cart Modal Styles (نفس السابق) */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: flex-end; }
         @media (min-width: 768px) { .modal { align-items: center; } .modal-content { width: 400px; border-radius: 15px; height: auto; max-height: 85vh; } }
         .modal-content { background-color: #fff; width: 100%; height: 90vh; border-radius: 20px 20px 0 0; padding: 20px; display: flex; flex-direction: column; animation: slideUp 0.3s; }
@@ -47,9 +125,17 @@
         .checkout-btn { width: 100%; background-color: var(--green-color); color: white; border: none; padding: 15px; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; }
         input, textarea { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-family: inherit; }
         .fab { position: fixed; bottom: 20px; left: 20px; background-color: var(--accent-color); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer; z-index: 90; }
-        .admin-toggle { text-align: center; margin: 30px 0; }
-        .admin-toggle button { background: #ddd; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; color: #555; }
-        .section-title { margin: 20px 0 10px 0; padding: 0 10px; font-size: 1.2rem; color: #666; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+
+        /* زر إظهار المنتجات غير النشطة */
+        .admin-toggle {
+            text-align: center; margin: 30px 0;
+        }
+        .admin-toggle button {
+            background: #ddd; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; color: #555;
+        }
+        .section-title {
+            margin: 20px 0 10px 0; padding: 0 10px; font-size: 1.2rem; color: #666; border-bottom: 1px solid #eee; padding-bottom: 5px;
+        }
     </style>
 </head>
 <body>
@@ -69,6 +155,7 @@
 
     <div class="container">
         <div id="loading" style="text-align:center; padding:50px;">جاري تحميل المنتجات... ⏳</div>
+        
         <div id="products-grid" class="products-grid"></div>
 
         <div class="admin-toggle" id="inactive-toggle" style="display:none;">
@@ -122,27 +209,6 @@
             });
         }
 
-        // ==========================================
-        //  دالة سحرية لإصلاح روابط صور جوجل درايف
-        // ==========================================
-        function processImage(url) {
-            if (!url) return 'https://via.placeholder.com/150';
-            
-            // التحقق مما إذا كان الرابط من جوجل درايف
-            if (url.includes('drive.google.com') && url.includes('/d/')) {
-                // استخراج معرف الصورة (ID)
-                try {
-                    let id = url.split('/d/')[1].split('/')[0];
-                    // إرجاع الرابط المباشر
-                    return `https://drive.google.com/uc?export=view&id=${id}`;
-                } catch (e) {
-                    console.error("Error parsing Drive URL", e);
-                    return url;
-                }
-            }
-            return url;
-        }
-
         window.addEventListener('DOMContentLoaded', () => {
             updateCartCount();
             fetch(API_URL)
@@ -160,16 +226,20 @@
                 });
         });
 
+        // دالة لعرض المنتجات النشطة وغير النشطة
         function renderAllProducts(products) {
+            // 1. تصفية المنتجات حسب القسم الحالي
             let filtered = products;
             if (activeCategory !== 'الكل') {
                 filtered = products.filter(p => p.category && p.category.trim() === activeCategory);
             }
 
+            // 2. فصل المنتجات النشطة عن غير النشطة
             const activeProducts = [];
             const inactiveProducts = [];
 
             filtered.forEach(p => {
+                // شروط النشاط: (active, aktive, aktive = yes, 1, نعم)
                 let status = p.aktive || p.active || 'no';
                 status = status.toString().trim().toLowerCase();
                 
@@ -180,8 +250,10 @@
                 }
             });
 
+            // 3. عرض النشطة في المكان الرئيسي
             renderGrid('products-grid', activeProducts, false);
 
+            // 4. عرض غير النشطة في المكان السفلي
             const inactiveContainer = document.getElementById('inactive-section');
             const toggleBtn = document.getElementById('inactive-toggle');
             
@@ -194,6 +266,7 @@
             }
         }
 
+        // دالة بناء الـ Grid
         function renderGrid(containerId, products, isInactive) {
             const grid = document.getElementById(containerId);
             grid.innerHTML = '';
@@ -215,8 +288,7 @@
                     hasDiscount = true;
                 }
 
-                // هنا نستخدم الدالة الجديدة لمعالجة الصورة
-                const imgSrc = processImage(p.image);
+                const imgSrc = p.image || 'https://via.placeholder.com/150';
                 
                 let priceHTML = '';
                 if (hasDiscount) {
@@ -226,6 +298,8 @@
                 }
 
                 let badgeHTML = hasDiscount ? `<div class="discount-badge">خصم ${discountPercent}%</div>` : '';
+                
+                // إضافة كلاس inactive إذا كان المنتج غير نشط
                 let cardClass = isInactive ? 'product-card inactive' : 'product-card';
                 let inactiveBadge = isInactive ? '<div class="inactive-badge">غير متوفر</div>' : '';
                 let btnState = isInactive ? 'disabled' : '';
@@ -236,7 +310,7 @@
                     <div class="${cardClass}">
                         ${badgeHTML}
                         ${inactiveBadge}
-                        <img src="${imgSrc}" class="product-image" loading="lazy" onerror="this.src='https://via.placeholder.com/150?text=خطأ+بالصورة'">
+                        <img src="${imgSrc}" class="product-image" loading="lazy">
                         <div class="product-info">
                             <div class="product-title">${p.name}</div>
                             <div class="product-desc">${p.description || ''}</div>
@@ -291,6 +365,7 @@
             renderAllProducts(productsData);
         }
 
+        // ... (باقي دوال السلة والواتساب نفس الكود السابق تماماً) ...
         function addToCart(identifier) {
             const product = productsData.find(p => (p.id || p.name) == identifier);
             let originalPrice = parseFloat(product.price);
