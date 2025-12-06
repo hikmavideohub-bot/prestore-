@@ -198,6 +198,23 @@
         let productsData = [];
         let activeCategory = 'الكل';
 
+        // --- دالة جديدة: تحويل روابط جوجل درايف إلى روابط مباشرة ---
+        function convertDriveLink(url) {
+            if (!url) return null;
+            // التحقق مما إذا كان الرابط من جوجل درايف
+            if (url.includes('drive.google.com')) {
+                // استخراج معرف الصورة (ID)
+                const idMatch = url.match(/\/d\/(.*?)\/|id=(.*?)(&|$)/);
+                if (idMatch) {
+                    const id = idMatch[1] || idMatch[2];
+                    // إرجاع الرابط المباشر
+                    return `https://drive.google.com/uc?export=view&id=${id}`;
+                }
+            }
+            // إذا لم يكن رابط درايف، أعد الرابط كما هو
+            return url;
+        }
+
         function cleanDataKeys(data) {
             return data.map(item => {
                 const newItem = {};
@@ -226,20 +243,16 @@
                 });
         });
 
-        // دالة لعرض المنتجات النشطة وغير النشطة
         function renderAllProducts(products) {
-            // 1. تصفية المنتجات حسب القسم الحالي
             let filtered = products;
             if (activeCategory !== 'الكل') {
                 filtered = products.filter(p => p.category && p.category.trim() === activeCategory);
             }
 
-            // 2. فصل المنتجات النشطة عن غير النشطة
             const activeProducts = [];
             const inactiveProducts = [];
 
             filtered.forEach(p => {
-                // شروط النشاط: (active, aktive, aktive = yes, 1, نعم)
                 let status = p.aktive || p.active || 'no';
                 status = status.toString().trim().toLowerCase();
                 
@@ -250,10 +263,8 @@
                 }
             });
 
-            // 3. عرض النشطة في المكان الرئيسي
             renderGrid('products-grid', activeProducts, false);
 
-            // 4. عرض غير النشطة في المكان السفلي
             const inactiveContainer = document.getElementById('inactive-section');
             const toggleBtn = document.getElementById('inactive-toggle');
             
@@ -266,7 +277,6 @@
             }
         }
 
-        // دالة بناء الـ Grid
         function renderGrid(containerId, products, isInactive) {
             const grid = document.getElementById(containerId);
             grid.innerHTML = '';
@@ -288,7 +298,10 @@
                     hasDiscount = true;
                 }
 
-                const imgSrc = p.image || 'https://via.placeholder.com/150';
+                // --- هنا التعديل: استخدام دالة التحويل ---
+                const rawImg = p.image; 
+                const imgSrc = convertDriveLink(rawImg) || 'https://via.placeholder.com/150';
+                // ----------------------------------------
                 
                 let priceHTML = '';
                 if (hasDiscount) {
@@ -299,7 +312,6 @@
 
                 let badgeHTML = hasDiscount ? `<div class="discount-badge">خصم ${discountPercent}%</div>` : '';
                 
-                // إضافة كلاس inactive إذا كان المنتج غير نشط
                 let cardClass = isInactive ? 'product-card inactive' : 'product-card';
                 let inactiveBadge = isInactive ? '<div class="inactive-badge">غير متوفر</div>' : '';
                 let btnState = isInactive ? 'disabled' : '';
@@ -310,7 +322,7 @@
                     <div class="${cardClass}">
                         ${badgeHTML}
                         ${inactiveBadge}
-                        <img src="${imgSrc}" class="product-image" loading="lazy">
+                        <img src="${imgSrc}" class="product-image" loading="lazy" alt="${p.name}">
                         <div class="product-info">
                             <div class="product-title">${p.name}</div>
                             <div class="product-desc">${p.description || ''}</div>
@@ -365,7 +377,6 @@
             renderAllProducts(productsData);
         }
 
-        // ... (باقي دوال السلة والواتساب نفس الكود السابق تماماً) ...
         function addToCart(identifier) {
             const product = productsData.find(p => (p.id || p.name) == identifier);
             let originalPrice = parseFloat(product.price);
