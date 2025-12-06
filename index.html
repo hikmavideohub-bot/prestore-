@@ -7,7 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* ... (نفس الستايلات السابقة) ... */
         :root {
             --primary-color: #2c3e50;
             --accent-color: #e67e22;
@@ -71,7 +70,6 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; flex-direction: column; position: relative;
         }
 
-        /* ستايل المنتجات غير النشطة */
         .product-card.inactive {
             opacity: 0.7;
             filter: grayscale(1);
@@ -80,7 +78,7 @@
         }
         .product-card.inactive .add-btn {
             background-color: #999;
-            pointer-events: none; /* منع الضغط */
+            pointer-events: none;
         }
 
         .discount-badge {
@@ -88,7 +86,6 @@
             color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;
         }
         
-        /* شارة غير نشط */
         .inactive-badge {
             position: absolute; top: 10px; left: 10px; background-color: #333;
             color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;
@@ -111,7 +108,6 @@
         }
         .add-btn:active { transform: scale(0.95); }
 
-        /* Cart Modal Styles (نفس السابق) */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: flex-end; }
         @media (min-width: 768px) { .modal { align-items: center; } .modal-content { width: 400px; border-radius: 15px; height: auto; max-height: 85vh; } }
         .modal-content { background-color: #fff; width: 100%; height: 90vh; border-radius: 20px 20px 0 0; padding: 20px; display: flex; flex-direction: column; animation: slideUp 0.3s; }
@@ -126,7 +122,6 @@
         input, textarea { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-family: inherit; }
         .fab { position: fixed; bottom: 20px; left: 20px; background-color: var(--accent-color); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer; z-index: 90; }
 
-        /* زر إظهار المنتجات غير النشطة */
         .admin-toggle {
             text-align: center; margin: 30px 0;
         }
@@ -198,20 +193,16 @@
         let productsData = [];
         let activeCategory = 'الكل';
 
-        // --- دالة جديدة: تحويل روابط جوجل درايف إلى روابط مباشرة ---
+        // --- دالة تحويل روابط جوجل درايف تلقائياً ---
         function convertDriveLink(url) {
             if (!url) return null;
-            // التحقق مما إذا كان الرابط من جوجل درايف
             if (url.includes('drive.google.com')) {
-                // استخراج معرف الصورة (ID)
                 const idMatch = url.match(/\/d\/(.*?)\/|id=(.*?)(&|$)/);
                 if (idMatch) {
                     const id = idMatch[1] || idMatch[2];
-                    // إرجاع الرابط المباشر
                     return `https://drive.google.com/uc?export=view&id=${id}`;
                 }
             }
-            // إذا لم يكن رابط درايف، أعد الرابط كما هو
             return url;
         }
 
@@ -298,10 +289,8 @@
                     hasDiscount = true;
                 }
 
-                // --- هنا التعديل: استخدام دالة التحويل ---
-                const rawImg = p.image; 
-                const imgSrc = convertDriveLink(rawImg) || 'https://via.placeholder.com/150';
-                // ----------------------------------------
+                // تطبيق التحويل على الرابط
+                const imgSrc = convertDriveLink(p.image) || 'https://via.placeholder.com/150';
                 
                 let priceHTML = '';
                 if (hasDiscount) {
