@@ -336,6 +336,10 @@
                 let btnText = isInactive ? 'نفذت الكمية' : '<i class="fas fa-plus"></i> أضف';
                 let btnClick = isInactive ? '' : `onclick="addToCart('${p.id || p.name}')"`;
 
+                const sizeValue = p.sizevalue || '';
+                const sizeUnit = p.sizeunit || '';
+                const sizeDisplay = sizeValue && sizeUnit ? `<div style="font-size:0.8rem; color:#666; margin-bottom:5px;"><strong>الحجم:</strong> ${sizeValue} ${sizeUnit}</div>` : '';
+
                 grid.innerHTML += `
                     <div class="${cardClass}">
                         ${badgeHTML}
@@ -343,6 +347,7 @@
                         <img src="${imgSrc}" class="product-image" loading="lazy" alt="${p.name}" referrerpolicy="no-referrer">
                         <div class="product-info">
                             <div class="product-title">${p.name}</div>
+                            ${sizeDisplay}
                             <div class="product-desc">${p.description || ''}</div>
                             <div class="product-footer">
                                 ${priceHTML}
