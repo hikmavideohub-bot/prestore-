@@ -4,16 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>متجر الذيب | سلة المشتريات</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
+        /* =========================================
+           🎨 قسم التصميم والألوان (CSS)
+           ========================================= */
         :root {
-            --primary-color: #2c3e50;
-            --accent-color: #e67e22;
-            --green-color: #27ae60;
-            --red-color: #c0392b;
-            --bg-color: #f4f7f6;
-            --card-bg: #ffffff;
+            /* يمكنك تغيير أكواد الألوان هنا لتناسب هويتك */
+            --primary-color: #2c3e50;  /* اللون الأساسي (الهيدر والأزرار) */
+            --accent-color: #e67e22;   /* لون التنبيهات (الدائرة الحمراء) */
+            --green-color: #27ae60;    /* لون النجاح والأسعار */
+            --red-color: #c0392b;      /* لون الخصم */
+            --bg-color: #f4f7f6;       /* لون خلفية الصفحة */
+            --card-bg: #ffffff;        /* لون خلفية كارت المنتج */
         }
 
         body {
@@ -25,6 +31,7 @@
             padding-bottom: 80px;
         }
 
+        /* --- تنسيقات الهيدر (الشريط العلوي) --- */
         header {
             background-color: var(--primary-color);
             color: white;
@@ -48,6 +55,7 @@
             border-radius: 50%; padding: 4px 8px; font-size: 0.8rem; font-weight: bold;
         }
 
+        /* --- تنسيقات شريط التصنيفات --- */
         .category-nav {
             background: #fff; padding: 10px; overflow-x: auto; white-space: nowrap;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: sticky; top: 70px; z-index: 99;
@@ -61,6 +69,7 @@
 
         .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
 
+        /* --- شبكة المنتجات --- */
         .products-grid {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px;
         }
@@ -81,6 +90,7 @@
             pointer-events: none;
         }
 
+        /* --- الشارات (خصم / جديد) --- */
         .discount-badge {
             position: absolute; top: 10px; right: 10px; background-color: var(--red-color);
             color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;
@@ -131,6 +141,7 @@
         }
         .add-btn:active { transform: scale(0.95); }
 
+        /* --- النافذة المنبثقة للسلة (Modal) --- */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: flex-end; }
         @media (min-width: 768px) { .modal { align-items: center; } .modal-content { width: 400px; border-radius: 15px; height: auto; max-height: 85vh; } }
         .modal-content { background-color: #fff; width: 100%; height: 90vh; border-radius: 20px 20px 0 0; padding: 20px; display: flex; flex-direction: column; animation: slideUp 0.3s; }
@@ -229,25 +240,37 @@
     </div>
 
     <script>
-        // إعدادات المتجر
+        // =========================================
+        // ⚙️ إعدادات المتجر الرئيسية
+        // =========================================
+        
+        // 🔴 غير رقم الواتساب هنا (مع مفتاح الدولة)
         const PHONE = '4917623456589'; 
         
-        // المتغيرات العامة
+        // المتغيرات العامة (لا تغيرها)
         let cart = JSON.parse(localStorage.getItem('altheeb_cart')) || [];
         let productsData = [];
         let activeCategory = 'الكل';
 
         // -------------------------
-        // كود الاتصال الجديد والسريع (Visualization API)
+        // تشغيل الكود عند تحميل الصفحة
         // -------------------------
         window.addEventListener('DOMContentLoaded', () => {
             updateCartCount();
             fetchProductsDirectly();
         });
 
+        // =========================================
+        // 🌐 وظيفة جلب البيانات من جوجل شيت
+        // =========================================
         async function fetchProductsDirectly() {
+            // 🔴 🔴 هام: إذا غيرت ملف الشيت، غير هذا الكود (ID) فقط
             const sheetId = '1-0bxz7fqJM3uxblsu1xx24KY5KNkYFu-32EY9893lOA';
-            const gid = '0'; // الصفحة الأولى
+            
+            // 🔴 رقم الصفحة داخل الشيت (عادة 0 للصفحة الأولى)
+            const gid = '0'; 
+
+            // الرابط السحري للاتصال
             const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&gid=${gid}`;
 
             try {
@@ -259,18 +282,14 @@
                 const json = JSON.parse(jsonString);
 
                 // استخراج العناوين (المفاتيح) من الصف الأول
-                // table.cols يحتوي على العناوين (Labels)
                 const headers = json.table.cols.map(col => col.label);
 
                 // تحويل الصفوف المعقدة إلى كائنات بسيطة
                 const rawProducts = json.table.rows.map(row => {
                     let product = {};
                     row.c.forEach((cell, index) => {
-                        // اسم المفتاح (مثلاً name, price)
                         const key = headers[index];
-                        // القيمة (نتأكد أنها ليست null)
                         const value = (cell && cell.v !== null) ? cell.v : "";
-                        
                         if(key) {
                             product[key] = value;
                         }
@@ -279,8 +298,6 @@
                 });
 
                 console.log('✅ تم جلب البيانات بنجاح:', rawProducts.length);
-                
-                // تنظيف المفاتيح ومعالجة البيانات
                 processFetchedData(rawProducts);
 
             } catch (error) {
@@ -289,13 +306,12 @@
             }
         }
 
-        // --- وظائف المساعدة والمنطق (كما هي في السابق) ---
+        // =========================================
+        // 🧠 المنطق البرمجي (المعالجة والعرض)
+        // =========================================
 
         function processFetchedData(rawData) {
-            // تنظيف أسماء المفاتيح من المسافات الزائدة
             const data = cleanDataKeys(rawData);
-            
-            // تصفية المنتجات التي ليس لها اسم
             productsData = data.filter(p => p.name && String(p.name).trim() !== '');
             
             document.getElementById('loading').style.display = 'none';
@@ -303,6 +319,7 @@
             renderAllProducts(productsData);
         }
 
+        // تحويل روابط الصور من درايف
         function convertDriveLink(url) {
             if (!url) return null;
             if (url.includes('drive.google.com')) {
@@ -315,12 +332,10 @@
             return url;
         }
 
+        // معالجة التواريخ
         function parseGermanDate(dateString) {
             if (!dateString) return null;
-            
             const str = dateString.toString().trim();
-            
-            // صيغة DD.MM.YYYY
             if (str.match(/^\d{1,2}\.\d{1,2}\.\d{4}$/)) {
                 const parts = str.split('.');
                 const day = parts[0].padStart(2, '0');
@@ -328,10 +343,7 @@
                 const year = parts[2];
                 return new Date(`${year}-${month}-${day}`);
             }
-            
-            // محاولة التحويل العادي
             try {
-                // ملاحظة: Visualization API أحياناً ترسل التاريخ بصيغة "Date(2023, 11, 25)"
                 if (typeof str === 'string' && str.includes('Date')) {
                    const nums = str.match(/\d+/g);
                    if(nums && nums.length >= 3) {
@@ -345,16 +357,16 @@
             }
         }
 
+        // تنظيف النسب المئوية
         function cleanPercent(percentValue) {
             if (!percentValue) return 0;
-            
             const str = percentValue.toString().trim();
             const cleanStr = str.replace('%', '').replace('٪', '');
-            
             const num = parseFloat(cleanStr);
             return isNaN(num) ? 0 : num;
         }
 
+        // تنظيف مفاتيح البيانات
         function cleanDataKeys(data) {
             return data.map(item => {
                 const newItem = {};
@@ -366,12 +378,10 @@
             });
         }
 
+        // التحقق من القيم المنطقية (نعم/لا)
         function checkBooleanValue(value) {
             if (!value) return false;
-            
-            // في حالة Visualization API القيم البوليان قد تأتي كـ true/false مباشرة
             if (typeof value === 'boolean') return value;
-
             const strValue = value.toString().toLowerCase().trim();
             return (
                 strValue === 'true' || 
@@ -397,7 +407,6 @@
             if (!checkBooleanValue(product.offer_aktive)) {
                 return false;
             }
-            
             const now = new Date();
             const startDate = product.offer_start_date ? parseGermanDate(product.offer_start_date) : null;
             const endDate = product.offer_end_date ? parseGermanDate(product.offer_end_date) : null;
@@ -406,7 +415,6 @@
                 try {
                     const endOfDay = new Date(endDate);
                     endOfDay.setHours(23, 59, 59, 999);
-                    
                     if (now < startDate || now > endOfDay) {
                         return false;
                     }
@@ -415,10 +423,10 @@
                     return false;
                 }
             }
-            
             return true;
         }
 
+        // حساب الأسعار والخصومات
         function calculatePrice(product) {
             const originalPrice = parseFloat(product.price) || 0;
             let finalPrice = originalPrice;
@@ -464,7 +472,6 @@
 
         function calculateCartItemPrice(item) {
             let total = 0;
-            
             if (item.hasBundle && item.bundleInfo) {
                 const bundles = Math.floor(item.qty / item.bundleInfo.qty);
                 const remainder = item.qty % item.bundleInfo.qty;
@@ -474,10 +481,10 @@
             } else {
                 total = item.originalPrice * item.qty;
             }
-            
             return parseFloat(total.toFixed(2));
         }
 
+        // رسم المنتجات على الشاشة
         function renderAllProducts(products) {
             let filtered = products;
             if (activeCategory !== 'الكل') {
@@ -594,7 +601,7 @@
         function renderCategories(products) {
             const nav = document.getElementById('category-nav');
             const rawCategories = products.map(p => p.category);
-            const uniqueCategories = [...new Set(rawCategories.filter(c => c && c.trim() !== ''))];
+            const uniqueCategories = [...new Set(rawCategories.filter(c && c.trim() !== ''))];
 
             if (uniqueCategories.length > 0) {
                 nav.style.display = 'block';
@@ -620,6 +627,10 @@
             if(btnElement) btnElement.classList.add('active');
             renderAllProducts(productsData);
         }
+
+        // =========================================
+        // 🛒 وظائف سلة المشتريات
+        // =========================================
 
         function addToCart(identifier) {
             const product = productsData.find(p => (p.id || p.name) == identifier);
@@ -751,6 +762,9 @@
             document.getElementById('cartModal').style.display = 'none';
         }
 
+        // =========================================
+        // 🚀 إرسال الطلب عبر واتساب
+        // =========================================
         function checkout() {
             const name = document.getElementById('cust-name').value;
             const address = document.getElementById('cust-address').value;
@@ -760,6 +774,7 @@
                 return;
             }
             
+            // 🔴 يمكنك تعديل الرسالة التي تصلك على واتساب هنا
             let msg = `*طلب جديد من متجر الذيب 🐺*\n`;
             msg += `========================\n`;
             msg += `👤 الاسم: ${name}\n`;
