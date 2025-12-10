@@ -229,17 +229,79 @@
     </div>
 
     <script>
-        // --- ÄNDERUNG START: Neue API URL und Cache Konfiguration ---
-        const API_URL = 'https://script.google.com/macros/s/AKfycbx3WZN_59d0Y0sf8VLoMa4JwQ8NkrZFZxHPxSmcHsuG9VryV7mvuAbBadiDWn5HjnPFDg/exec';
-        const CACHE_KEY = 'altheeb_products_cache'; // Name des Caches im localStorage
-        const CACHE_TIME_KEY = 'altheeb_cache_time'; // Zeitstempel des Caches
-        const CACHE_DURATION = 5 * 60 * 1000; // 5 Minuten Cache-Dauer in Millisekunden
-        // --- ÄNDERUNG ENDE ---
-
+        // إعدادات المتجر
         const PHONE = '4917623456589'; 
+        
+        // المتغيرات العامة
         let cart = JSON.parse(localStorage.getItem('altheeb_cart')) || [];
         let productsData = [];
         let activeCategory = 'الكل';
+
+        // -------------------------
+        // كود الاتصال الجديد والسريع (Visualization API)
+        // -------------------------
+        window.addEventListener('DOMContentLoaded', () => {
+            updateCartCount();
+            fetchProductsDirectly();
+        });
+
+        async function fetchProductsDirectly() {
+            const sheetId = '1-0bxz7fqJM3uxblsu1xx24KY5KNkYFu-32EY9893lOA';
+            const gid = '0'; // الصفحة الأولى
+            const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&gid=${gid}`;
+
+            try {
+                const response = await fetch(url);
+                const text = await response.text();
+                
+                // تنظيف رد جوجل للحصول على JSON صافي
+                const jsonString = text.substring(47, text.length - 2);
+                const json = JSON.parse(jsonString);
+
+                // استخراج العناوين (المفاتيح) من الصف الأول
+                // table.cols يحتوي على العناوين (Labels)
+                const headers = json.table.cols.map(col => col.label);
+
+                // تحويل الصفوف المعقدة إلى كائنات بسيطة
+                const rawProducts = json.table.rows.map(row => {
+                    let product = {};
+                    row.c.forEach((cell, index) => {
+                        // اسم المفتاح (مثلاً name, price)
+                        const key = headers[index];
+                        // القيمة (نتأكد أنها ليست null)
+                        const value = (cell && cell.v !== null) ? cell.v : "";
+                        
+                        if(key) {
+                            product[key] = value;
+                        }
+                    });
+                    return product;
+                });
+
+                console.log('✅ تم جلب البيانات بنجاح:', rawProducts.length);
+                
+                // تنظيف المفاتيح ومعالجة البيانات
+                processFetchedData(rawProducts);
+
+            } catch (error) {
+                console.error("خطأ في جلب البيانات:", error);
+                document.getElementById('loading').innerHTML = 'حدث خطأ في تحميل المنتجات، يرجى المحاولة لاحقاً.';
+            }
+        }
+
+        // --- وظائف المساعدة والمنطق (كما هي في السابق) ---
+
+        function processFetchedData(rawData) {
+            // تنظيف أسماء المفاتيح من المسافات الزائدة
+            const data = cleanDataKeys(rawData);
+            
+            // تصفية المنتجات التي ليس لها اسم
+            productsData = data.filter(p => p.name && String(p.name).trim() !== '');
+            
+            document.getElementById('loading').style.display = 'none';
+            renderCategories(productsData);
+            renderAllProducts(productsData);
+        }
 
         function convertDriveLink(url) {
             if (!url) return null;
@@ -258,6 +320,7 @@
             
             const str = dateString.toString().trim();
             
+            // صيغة DD.MM.YYYY
             if (str.match(/^\d{1,2}\.\d{1,2}\.\d{4}$/)) {
                 const parts = str.split('.');
                 const day = parts[0].padStart(2, '0');
@@ -266,7 +329,15 @@
                 return new Date(`${year}-${month}-${day}`);
             }
             
+            // محاولة التحويل العادي
             try {
+                // ملاحظة: Visualization API أحياناً ترسل التاريخ بصيغة "Date(2023, 11, 25)"
+                if (typeof str === 'string' && str.includes('Date')) {
+                   const nums = str.match(/\d+/g);
+                   if(nums && nums.length >= 3) {
+                       return new Date(nums[0], nums[1], nums[2]);
+                   }
+                }
                 return new Date(str);
             } catch (e) {
                 console.error('خطأ في تحويل التاريخ:', str, e);
@@ -298,6 +369,9 @@
         function checkBooleanValue(value) {
             if (!value) return false;
             
+            // في حالة Visualization API القيم البوليان قد تأتي كـ true/false مباشرة
+            if (typeof value === 'boolean') return value;
+
             const strValue = value.toString().toLowerCase().trim();
             return (
                 strValue === 'true' || 
@@ -403,86 +477,6 @@
             
             return parseFloat(total.toFixed(2));
         }
-
-        // --- ÄNDERUNG START: Logik für Fetch mit Cache und Konvertierung ---
-        window.addEventListener('DOMContentLoaded', () => {
-            updateCartCount();
-
-            // Cache prüfen
-            const cachedData = localStorage.getItem(CACHE_KEY);
-            const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
-            const now = new Date().getTime();
-
-            // Wenn Cache existiert UND gültig ist (weniger als 5 Minuten alt)
-            if (cachedData && cachedTime && (now - parseInt(cachedTime) < CACHE_DURATION)) {
-                console.log('⚡ Lade Produkte aus dem Cache (Local Storage)');
-                try {
-                    const rawData = JSON.parse(cachedData);
-                    processFetchedData(rawData);
-                } catch (e) {
-                    console.error('Fehler beim Lesen des Caches, lade neu...', e);
-                    fetchDataFromApi();
-                }
-            } else {
-                // Sonst: Neu laden
-                console.log('🌐 Lade Produkte frisch von der API');
-                fetchDataFromApi();
-            }
-        });
-
-        function fetchDataFromApi() {
-            fetch(API_URL)
-                .then(res => res.json())
-                .then(rawData => {
-                    // KONVERTIERUNG: Array-of-Arrays (neues Format) zu Array-of-Objects (altes Format)
-                    let convertedData = [];
-                    
-                    // Prüfung: Ist es ein Array und ist das erste Element auch ein Array? (Dann ist es das Google Sheet Format)
-                    if (Array.isArray(rawData) && rawData.length > 0 && Array.isArray(rawData[0])) {
-                        const headers = rawData[0]; // Die erste Zeile sind die Überschriften (Keys)
-                        // Wir gehen durch alle Zeilen ab Index 1 (Daten)
-                        convertedData = rawData.slice(1).map(row => {
-                            let obj = {};
-                            headers.forEach((key, index) => {
-                                // Mappe Wert zu Schlüssel. Falls undefined (leere Zelle am Ende), nimm leeren String
-                                obj[key] = row[index] !== undefined ? row[index] : "";
-                            });
-                            return obj;
-                        });
-                        console.log('✅ Daten erfolgreich von Array-Format zu Objekt-Format konvertiert');
-                    } else {
-                        // Fallback: Falls die API doch Objekte sendet, nimm es direkt
-                        convertedData = rawData;
-                    }
-
-                    // CACHE: Daten im LocalStorage speichern
-                    try {
-                        localStorage.setItem(CACHE_KEY, JSON.stringify(convertedData));
-                        localStorage.setItem(CACHE_TIME_KEY, new Date().getTime().toString());
-                    } catch (e) {
-                        console.warn('Cache konnte nicht gespeichert werden (vielleicht Speicher voll)', e);
-                    }
-
-                    // Weiterverarbeitung
-                    processFetchedData(convertedData);
-                })
-                .catch(err => {
-                    document.getElementById('loading').innerHTML = 'حدث خطأ في الاتصال';
-                    console.error(err);
-                });
-        }
-
-        // Diese Funktion übernimmt die Verarbeitung, egal ob Cache oder Live
-        function processFetchedData(rawData) {
-            console.log('البيانات الأصلية (بعد المعالجة):', rawData);
-            const data = cleanDataKeys(rawData);
-            
-            productsData = data.filter(p => p.name && p.name.trim() !== '');
-            document.getElementById('loading').style.display = 'none';
-            renderCategories(productsData);
-            renderAllProducts(productsData);
-        }
-        // --- ÄNDERUNG ENDE ---
 
         function renderAllProducts(products) {
             let filtered = products;
