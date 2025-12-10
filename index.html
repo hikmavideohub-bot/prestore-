@@ -229,7 +229,13 @@
     </div>
 
     <script>
-        const API_URL = 'https://sheetdb.io/api/v1/0flk7iaw3nr0g';
+        // --- ÄNDERUNG START: Neue API URL und Cache Konfiguration ---
+        const API_URL = 'https://script.google.com/macros/s/AKfycbx3WZN_59d0Y0sf8VLoMa4JwQ8NkrZFZxHPxSmcHsuG9VryV7mvuAbBadiDWn5HjnPFDg/exec';
+        const CACHE_KEY = 'altheeb_products_cache'; // Name des Caches im localStorage
+        const CACHE_TIME_KEY = 'altheeb_cache_time'; // Zeitstempel des Caches
+        const CACHE_DURATION = 5 * 60 * 1000; // 5 Minuten Cache-Dauer in Millisekunden
+        // --- ÄNDERUNG ENDE ---
+
         const PHONE = '4917623456589'; 
         let cart = JSON.parse(localStorage.getItem('altheeb_cart')) || [];
         let productsData = [];
@@ -247,13 +253,11 @@
             return url;
         }
 
-        // دالة ذكية لتحويل التاريخ من DD.MM.YYYY إلى YYYY-MM-DD
         function parseGermanDate(dateString) {
             if (!dateString) return null;
             
             const str = dateString.toString().trim();
             
-            // التحقق من صيغة DD.MM.YYYY
             if (str.match(/^\d{1,2}\.\d{1,2}\.\d{4}$/)) {
                 const parts = str.split('.');
                 const day = parts[0].padStart(2, '0');
@@ -262,7 +266,6 @@
                 return new Date(`${year}-${month}-${day}`);
             }
             
-            // إذا كان التاريخ بصيغة أخرى، حاول تحويله بشكل طبيعي
             try {
                 return new Date(str);
             } catch (e) {
@@ -271,15 +274,12 @@
             }
         }
 
-        // دالة لتنظيف النسبة المئوية
         function cleanPercent(percentValue) {
             if (!percentValue) return 0;
             
             const str = percentValue.toString().trim();
-            // إزالة علامة % إذا كانت موجودة
             const cleanStr = str.replace('%', '').replace('٪', '');
             
-            // تحويل إلى رقم
             const num = parseFloat(cleanStr);
             return isNaN(num) ? 0 : num;
         }
@@ -288,7 +288,6 @@
             return data.map(item => {
                 const newItem = {};
                 Object.keys(item).forEach(key => {
-                    // نترك المفاتيح كما هي تماماً بدون أي تعديل
                     const cleanKey = key.trim();
                     newItem[cleanKey] = item[key];
                 });
@@ -321,35 +320,20 @@
         }
 
         function isOfferActive(product) {
-            // أولاً، تحقق من offer_aktive
             if (!checkBooleanValue(product.offer_aktive)) {
                 return false;
             }
             
-            // ثم تحقق من تاريخ العرض إذا كان متوفراً
             const now = new Date();
-            
-            // استخدام الدالة الذكية لتحويل التاريخ
             const startDate = product.offer_start_date ? parseGermanDate(product.offer_start_date) : null;
             const endDate = product.offer_end_date ? parseGermanDate(product.offer_end_date) : null;
             
-            console.log(`التحقق من العرض للمنتج: ${product.name}`, {
-                startDate: startDate,
-                endDate: endDate,
-                now: now,
-                startDateString: product.offer_start_date,
-                endDateString: product.offer_end_date
-            });
-            
             if (startDate && endDate) {
                 try {
-                    // تحقق مما إذا كان التاريخ الحالي بين startDate و endDate
-                    // نضيف يوم كامل للنهاية (حتى نهاية اليوم)
                     const endOfDay = new Date(endDate);
                     endOfDay.setHours(23, 59, 59, 999);
                     
                     if (now < startDate || now > endOfDay) {
-                        console.log(`العرض غير فعال: خارج النطاق الزمني`);
                         return false;
                     }
                 } catch (e) {
@@ -369,7 +353,6 @@
             let discountPercent = 0;
             let bundleInfo = null;
 
-            // تطبيق منطق العروض كما طلبت
             if (hasOffer(product) && isOfferActive(product)) {
                 const offerType = (product.offer_type || '').toLowerCase();
                 
@@ -378,7 +361,6 @@
                     if (discountPercent > 0 && discountPercent <= 100) {
                         finalPrice = originalPrice - (originalPrice * discountPercent / 100);
                         hasDiscount = true;
-                        console.log(`تم تطبيق خصم ${discountPercent}% على ${product.name}: ${originalPrice} -> ${finalPrice}`);
                     }
                 } 
                 else if (offerType.includes('bundle')) {
@@ -392,7 +374,6 @@
                             price: bundlePrice,
                             unitPrice: bundlePrice / bundleQty
                         };
-                        console.log(`تم تطبيق عرض الحزمة على ${product.name}: ${bundleQty} بـ ${bundlePrice}$`);
                     }
                 }
             }
@@ -423,25 +404,85 @@
             return parseFloat(total.toFixed(2));
         }
 
+        // --- ÄNDERUNG START: Logik für Fetch mit Cache und Konvertierung ---
         window.addEventListener('DOMContentLoaded', () => {
             updateCartCount();
+
+            // Cache prüfen
+            const cachedData = localStorage.getItem(CACHE_KEY);
+            const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
+            const now = new Date().getTime();
+
+            // Wenn Cache existiert UND gültig ist (weniger als 5 Minuten alt)
+            if (cachedData && cachedTime && (now - parseInt(cachedTime) < CACHE_DURATION)) {
+                console.log('⚡ Lade Produkte aus dem Cache (Local Storage)');
+                try {
+                    const rawData = JSON.parse(cachedData);
+                    processFetchedData(rawData);
+                } catch (e) {
+                    console.error('Fehler beim Lesen des Caches, lade neu...', e);
+                    fetchDataFromApi();
+                }
+            } else {
+                // Sonst: Neu laden
+                console.log('🌐 Lade Produkte frisch von der API');
+                fetchDataFromApi();
+            }
+        });
+
+        function fetchDataFromApi() {
             fetch(API_URL)
                 .then(res => res.json())
                 .then(rawData => {
-                    console.log('البيانات الأصلية:', rawData);
-                    const data = cleanDataKeys(rawData);
-                    console.log('البيانات بعد التنظيف:', data);
+                    // KONVERTIERUNG: Array-of-Arrays (neues Format) zu Array-of-Objects (altes Format)
+                    let convertedData = [];
                     
-                    productsData = data.filter(p => p.name && p.name.trim() !== '');
-                    document.getElementById('loading').style.display = 'none';
-                    renderCategories(productsData);
-                    renderAllProducts(productsData);
+                    // Prüfung: Ist es ein Array und ist das erste Element auch ein Array? (Dann ist es das Google Sheet Format)
+                    if (Array.isArray(rawData) && rawData.length > 0 && Array.isArray(rawData[0])) {
+                        const headers = rawData[0]; // Die erste Zeile sind die Überschriften (Keys)
+                        // Wir gehen durch alle Zeilen ab Index 1 (Daten)
+                        convertedData = rawData.slice(1).map(row => {
+                            let obj = {};
+                            headers.forEach((key, index) => {
+                                // Mappe Wert zu Schlüssel. Falls undefined (leere Zelle am Ende), nimm leeren String
+                                obj[key] = row[index] !== undefined ? row[index] : "";
+                            });
+                            return obj;
+                        });
+                        console.log('✅ Daten erfolgreich von Array-Format zu Objekt-Format konvertiert');
+                    } else {
+                        // Fallback: Falls die API doch Objekte sendet, nimm es direkt
+                        convertedData = rawData;
+                    }
+
+                    // CACHE: Daten im LocalStorage speichern
+                    try {
+                        localStorage.setItem(CACHE_KEY, JSON.stringify(convertedData));
+                        localStorage.setItem(CACHE_TIME_KEY, new Date().getTime().toString());
+                    } catch (e) {
+                        console.warn('Cache konnte nicht gespeichert werden (vielleicht Speicher voll)', e);
+                    }
+
+                    // Weiterverarbeitung
+                    processFetchedData(convertedData);
                 })
                 .catch(err => {
                     document.getElementById('loading').innerHTML = 'حدث خطأ في الاتصال';
                     console.error(err);
                 });
-        });
+        }
+
+        // Diese Funktion übernimmt die Verarbeitung, egal ob Cache oder Live
+        function processFetchedData(rawData) {
+            console.log('البيانات الأصلية (بعد المعالجة):', rawData);
+            const data = cleanDataKeys(rawData);
+            
+            productsData = data.filter(p => p.name && p.name.trim() !== '');
+            document.getElementById('loading').style.display = 'none';
+            renderCategories(productsData);
+            renderAllProducts(productsData);
+        }
+        // --- ÄNDERUNG ENDE ---
 
         function renderAllProducts(products) {
             let filtered = products;
@@ -459,9 +500,6 @@
                     inactiveProducts.push(p);
                 }
             });
-
-            console.log('المنتجات النشطة:', activeProducts.length);
-            console.log('المنتجات غير النشطة:', inactiveProducts.length);
 
             renderGrid('products-grid', activeProducts, false);
 
@@ -489,16 +527,6 @@
             products.forEach(p => {
                 const pricing = calculatePrice(p);
                 const imgSrc = convertDriveLink(p.image) || 'https://via.placeholder.com/150';
-                
-                console.log(`عرض المنتج: ${p.name}`, {
-                    product: p,
-                    pricing: pricing,
-                    hasOffer: hasOffer(p),
-                    isOfferActive: isOfferActive(p),
-                    offerType: p.offer_type,
-                    percent: p.percent,
-                    cleanedPercent: cleanPercent(p.percent)
-                });
                 
                 let priceHTML = '';
                 let badgeHTML = '';
