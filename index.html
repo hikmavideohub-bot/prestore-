@@ -364,13 +364,29 @@
         }
 
         function cleanPercent(percentValue) {
-            if (!percentValue) return 0;
+            if (percentValue === null || percentValue === undefined || percentValue === '') return 0;
             
-            const str = percentValue.toString().trim();
-            const cleanStr = str.replace('%', '').replace('٪', '');
+            // قيمة رقمية مباشرة
+            if (typeof percentValue === 'number') {
+                // إذا كانت بين 0 و 1 اعتبرها ككسر وحولها إلى نسبة
+                if (percentValue > 0 && percentValue <= 1) {
+                    return parseFloat((percentValue * 100).toFixed(2));
+                }
+                return parseFloat(percentValue);
+            }
             
-            const num = parseFloat(cleanStr);
-            return isNaN(num) ? 0 : num;
+            // سلسلة نصية: إزالة علامة % ودعم الفاصلة العشرية
+            let str = String(percentValue).trim();
+            str = str.replace('%', '').replace('٪', '');
+            str = str.replace(',', '.');
+            
+            const num = parseFloat(str);
+            if (isNaN(num)) return 0;
+            
+            // إذا أدخل المستخدم ككسر (0 < num <= 1) اعتبره fraction وحوّله إلى %
+            if (num > 0 && num <= 1) return parseFloat((num * 100).toFixed(2));
+            
+            return num;
         }
 
         function cleanDataKeys(data) {
