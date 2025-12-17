@@ -1195,11 +1195,12 @@
         }
         
         /* =========================================
-           🎨 تصميم متجاوب للهواتف
+           🎨 تصميم متجاوب للهواتف - محسّن للغاية!
            ========================================= */
         @media (max-width: 768px) {
             body {
                 padding-top: 70px;
+                font-size: 14px;
             }
             
             header {
@@ -1209,6 +1210,10 @@
             
             .logo-text h1 {
                 font-size: var(--font-lg);
+            }
+            
+            .logo-text p {
+                display: none; /* إخفاء شعار ثانوي للهواتف */
             }
             
             .nav-menu {
@@ -1238,9 +1243,162 @@
                 padding: var(--space-xl) 0;
             }
             
+            .category-nav {
+                top: 80px;
+                padding: var(--space-sm);
+                margin-bottom: var(--space-lg);
+                overflow-x: auto;
+                justify-content: flex-start;
+                white-space: nowrap;
+                flex-wrap: nowrap;
+            }
+            
+            .cat-btn {
+                padding: 8px 16px;
+                font-size: 13px;
+                flex-shrink: 0;
+            }
+            
+            /* تحسين كبير لعرض المنتجات على الهواتف */
             .products-grid {
-                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-                gap: var(--space-md);
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+                margin-bottom: var(--space-xl);
+            }
+            
+            /* كارت منتج مدمج للهواتف */
+            .product-card {
+                border-radius: 12px;
+                box-shadow: var(--shadow-sm);
+                height: auto;
+                display: flex;
+                flex-direction: column;
+                padding-bottom: 10px;
+                min-height: 280px;
+            }
+            
+            .product-card:hover {
+                transform: none; /* إلغاء التأثير على الهواتف */
+            }
+            
+            .product-image-container {
+                height: 120px;
+                border-bottom: 1px solid var(--border-color);
+            }
+            
+            .product-image {
+                object-fit: contain;
+                height: 100%;
+                padding: 10px;
+            }
+            
+            /* شارات المنتج على الهواتف */
+            .product-badges {
+                top: 5px;
+                right: 5px;
+                gap: 3px;
+            }
+            
+            .discount-badge,
+            .bundle-badge,
+            .inactive-badge {
+                font-size: 10px;
+                padding: 3px 6px;
+                border-radius: 6px;
+            }
+            
+            .bundle-badge-details {
+                display: none; /* إخفاء التفاصيل على الهواتف */
+            }
+            
+            /* معلومات المنتج على الهواتف */
+            .product-info {
+                padding: 10px;
+                flex-grow: 1;
+            }
+            
+            .product-title {
+                font-size: 14px;
+                margin-bottom: 6px;
+                line-height: 1.3;
+                text-align: center;
+                height: 36px;
+                overflow: hidden;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+            }
+            
+            .product-desc {
+                display: none !important; /* إخفاء الوصف على الهواتف */
+            }
+            
+            .product-size {
+                font-size: 12px;
+                margin-bottom: 8px;
+                justify-content: center;
+            }
+            
+            .bundle-info {
+                display: none; /* إخفاء معلومات الباقة على الهواتف */
+            }
+            
+            /* السعر على الهواتف */
+            .price-container {
+                gap: 6px;
+                margin-top: auto;
+            }
+            
+            .price-top {
+                display: none; /* إخفاء السعر العلوي على الهواتف */
+            }
+            
+            .btn-bottom {
+                flex-direction: column;
+                gap: 6px;
+            }
+            
+            .price-wrapper {
+                width: 100%;
+                align-items: center;
+                margin-bottom: 5px;
+            }
+            
+            .price-old {
+                font-size: 11px;
+            }
+            
+            .price-new {
+                font-size: 16px;
+                font-weight: 800;
+            }
+            
+            /* زر الإضافة على الهواتف */
+            .add-btn {
+                padding: 10px;
+                font-size: 13px;
+                border-radius: 8px;
+                min-height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .add-btn .btn-text {
+                display: inline; /* إظهار النص على الهواتف */
+            }
+            
+            .add-btn i {
+                display: none; /* إخفاء الأيقونة على الهواتف */
+            }
+            
+            /* تحسينات أخرى */
+            .section-header h2 {
+                font-size: var(--font-xl);
+            }
+            
+            .section-header p {
+                font-size: var(--font-md);
             }
             
             .about-hero {
@@ -1248,11 +1406,26 @@
             }
             
             .about-hero h1 {
-                font-size: 2rem;
+                font-size: 1.8rem;
             }
             
-            .section-header h2 {
-                font-size: var(--font-2xl);
+            .offers-banner {
+                flex-direction: column;
+                text-align: center;
+                padding: var(--space-md);
+            }
+            
+            .timer {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .timer-item {
+                min-width: 50px;
+            }
+            
+            .timer-value {
+                font-size: 1.5rem;
             }
             
             .fab {
@@ -1262,20 +1435,90 @@
                 height: 50px;
                 font-size: 1.3rem;
             }
+            
+            /* تحسين الحروف والمسافات */
+            .currency {
+                font-size: 12px;
+                margin-left: 2px;
+            }
+            
+            /* تحسين الفوتر على الهواتف */
+            .footer-container {
+                grid-template-columns: 1fr;
+                gap: var(--space-lg);
+            }
         }
         
+        /* تحسينات إضافية للهواتف الصغيرة جداً */
         @media (max-width: 480px) {
             .products-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
             }
             
-            .offers-banner {
-                flex-direction: column;
-                text-align: center;
+            .product-card {
+                min-height: 260px;
             }
             
-            .timer {
-                justify-content: center;
+            .product-image-container {
+                height: 100px;
+            }
+            
+            .product-title {
+                font-size: 13px;
+                height: 32px;
+            }
+            
+            .price-new {
+                font-size: 15px;
+            }
+            
+            .add-btn {
+                padding: 8px;
+                font-size: 12px;
+            }
+            
+            .container {
+                padding: 0 var(--space-md);
+            }
+            
+            .section-header {
+                margin-bottom: var(--space-xl);
+            }
+        }
+        
+        /* تحسينات للهواتف الأفقية (عرض أكبر) */
+        @media (min-width: 481px) and (max-width: 768px) and (orientation: landscape) {
+            .products-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .product-card {
+                min-height: 240px;
+            }
+            
+            .product-image-container {
+                height: 100px;
+            }
+        }
+        
+        /* تحسينات للأجهزة اللوحية */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .products-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: var(--space-md);
+            }
+            
+            .product-image-container {
+                height: 150px;
+            }
+            
+            .product-title {
+                font-size: var(--font-md);
+            }
+            
+            .price-new {
+                font-size: var(--font-lg);
             }
         }
         
@@ -1357,68 +1600,22 @@
             margin-bottom: var(--space-lg);
             color: var(--border-color);
         }
-        @media (max-width: 1024px) {
+        
+        /* تحسين عرض العملة */
+        .price-new, .price-old {
+            display: inline;
+        }
 
-  /* Grid dichter */
-  .products-grid {
-    gap: 8px;
-  }
-
-  /* Card extrem kompakt */
-  .product-card {
-    padding: 8px;
-  }
-
-  /* Produktbild rund & klein */
-  .product-card img {
-    width: 80px;
-    height: 80px;
-    object-fit: cover;
-    border-radius: 50%;
-    margin: 0 auto 6px;
-    display: block;
-  }
-
-  /* Titel kleiner */
-  .product-card h3,
-  .product-title {
-    font-size: 13px;
-    line-height: 1.2;
-    text-align: center;
-  }
-
-  /* Preis kleiner */
-  .price,
-  .price-top {
-    font-size: 13px;
-    text-align: center;
-  }
-
-  /* Button mini */
-  .add-btn {
-    font-size: 11px;
-    padding: 5px 8px;
-  }
-
-  /* Badges kleiner */
-  .bundle-badge,
-  .discount-badge {
-    font-size: 10px;
-    padding: 2px 6px;
-  }
-}
-@media (max-width: 600px) {
-  .products-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-@media (min-width: 601px) and (max-width: 1024px) {
-  .products-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-    </style> 
+        .currency {
+            display: inline !important;
+            margin-right: 4px;
+        }
+        
+        /* تحسين عرض الأزرار على الهواتف */
+        .add-btn {
+            white-space: nowrap;
+        }
+</style>
 </head>
 <body>
     <!-- 🎨 الهيدر المحسّن -->
@@ -2442,7 +2639,9 @@ function isOfferActive(product) {
 
     <div class="btn-bottom">
         <button class="add-btn" onclick="addToCart('${p.id || p.name}', this)">
-            <i class="fas fa-plus"></i> أضف إلى السلة
+            <i class="fas fa-plus"></i>
+<span class="btn-text">أضف</span>
+
         </button>
     </div>
 </div>
