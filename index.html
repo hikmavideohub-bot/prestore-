@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+    <meta name="description" content="متجر الذيب - أجود المنتجات الغذائية مع عروض خاصة وإمكانية الطلب عبر واتساب">
+    <meta name="theme-color" content="#2c3e50">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>متجر الذيب | أجود المنتجات الغذائية</title>
@@ -484,16 +486,111 @@
         .bundle-info p {
             font-size: var(--font-xs);
             color: var(--accent-color);
-            font-weight: 500;
+            font-weight: 500;    
         }
-        
+        @media (max-width: 1024px) {
+
+  /* Grid dichter */
+  .products-grid {
+    gap: 8px;
+  }
+
+  /* Card extrem kompakt */
+  .product-card {
+    padding: 8px;
+  }
+
+  /* Produktbild rund & klein */
+  .product-card img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin: 0 auto 6px;
+    display: block;
+  }
+
+  /* Titel kleiner */
+  .product-card h3,
+  .product-title {
+    font-size: 13px;
+    line-height: 1.2;
+    text-align: center;
+  }
+
+  /* Preis kleiner */
+  .price,
+  .price-top {
+    font-size: 13px;
+    text-align: center;
+  }
+
+  /* Button mini */
+  .add-btn {
+    font-size: 11px;
+    padding: 5px 8px;
+  }
+
+  /* Badges kleiner */
+  .bundle-badge,
+  .discount-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+}
+/* 📱 Handy: 3 Produkte pro Zeile */
+@media (max-width: 600px) {
+  .products-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+/* 📲 Tablet: 4 Produkte pro Zeile */
+@media (min-width: 601px) and (max-width: 1024px) {
+  .products-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+        .bundle-badge{
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bundle-badge-details{
+  font-size: 12px;
+  opacity: .95;
+  white-space: nowrap;
+}
+
+        .product-desc-wrapper {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.product-card.open .product-desc-wrapper {
+    max-height: 200px; /* kannst du erhöhen */
+}
+
         /* سعر المنتج */
         .price-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: var(--space-md);
-        }
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.price-top {
+  font-weight: bold;
+}
+
+.btn-bottom {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+}
+
         
         .price-wrapper {
             display: flex;
@@ -1331,7 +1428,7 @@
             <!-- الشعار -->
             <div class="logo">
                 <div class="logo-icon">
-                    <i class="fas fa-paw"></i>
+                    <i class="fas fa-shopping-basket"></i>
                 </div>
                 <div class="logo-text">
                     <h1>متجر الذيب</h1>
@@ -1359,12 +1456,14 @@
                         <span>العروض</span>
                     </a>
                 </div>
-                <div class="nav-item">
+
+                <!-- hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhier für faq-->
+                <!-- <div class="nav-item">
                     <a href="#" class="nav-link" data-page="faq">
                         <i class="fas fa-question-circle"></i>
                         <span>الأسئلة الشائعة</span>
                     </a>
-                </div>
+                </div> -->
                 <div class="nav-item">
                     <a href="#" class="nav-link" data-page="contact">
                         <i class="fas fa-address-book"></i>
@@ -1534,7 +1633,7 @@
         </section>
         
         <!-- صفحة الأسئلة الشائعة -->
-        <section id="faq-page" class="page">
+        <section id="faq-page" class="page" style="display:none !important;">
             <div class="container">
                 <div class="section-header">
                     <h2>الأسئلة الشائعة</h2>
@@ -1607,7 +1706,7 @@
                     </a>
                 </div>
             </div>
-        </section>
+        </section> 
         
         <!-- صفحة اتصل بنا -->
         <section id="contact-page" class="page">
@@ -1803,6 +1902,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <script>
+        const CURRENCY = '€';
         // =========================================
         // ⚙️ إعدادات المتجر الرئيسية
         // =========================================
@@ -1846,51 +1946,47 @@
         // =========================================
         // 🌐 وظيفة جلب البيانات من جوجل شيت
         // =========================================
-        async function fetchProductsDirectly() {
-            // رابط جلب البيانات من جوجل شيت
-            const gid = '0';
-            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${gid}`;
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxzHzLM7_6zTeAjXI1PkSm38t9UG_KC3IzWZdQfbBmKHftgT8zRYQMdzR6dfaylGbL8/exec';
 
-            try {
-                const response = await fetch(url);
-                const text = await response.text();
-                
-                // تنظيف رد جوجل للحصول على JSON صافي
-                const jsonString = text.substring(47, text.length - 2);
-                const json = JSON.parse(jsonString);
+        document.addEventListener('click', function (e) {
+    const card = e.target.closest('.product-card');
+    if (!card) return;
 
-                // استخراج العناوين (المفاتيح) من الصف الأول
-                const headers = json.table.cols.map(col => col.label);
+    // nicht öffnen wenn Button geklickt
+    if (e.target.closest('button')) return;
 
-                // تحويل الصفوف المعقدة إلى كائنات بسيطة
-                const rawProducts = json.table.rows.map(row => {
-                    let product = {};
-                    row.c.forEach((cell, index) => {
-                        const key = headers[index];
-                        const value = (cell && cell.v !== null) ? cell.v : "";
-                        
-                        if(key) {
-                            product[key] = value;
-                        }
-                    });
-                    return product;
-                });
+    card.classList.toggle('open');
+});
 
-                console.log('✅ تم جلب البيانات بنجاح:', rawProducts.length);
-                
-                // تنظيف ومعالجة البيانات
-                processFetchedData(rawProducts);
 
-            } catch (error) {
-                console.error("خطأ في جلب البيانات:", error);
-                document.getElementById('loading').innerHTML = `
-                    <div class="alert alert-error">
-                        <span>حدث خطأ في تحميل المنتجات، يرجى المحاولة لاحقاً.</span>
-                        <button class="alert-close" onclick="this.parentElement.style.display='none'">&times;</button>
-                    </div>
-                `;
-            }
-        }
+async function fetchProductsDirectly() {
+  try {
+    const res = await fetch(`${API_URL}?type=products&_ts=${Date.now()}`, {
+      headers: { 'Accept': 'application/json' }
+    });
+    const json = await res.json();
+    if (!json.success) throw new Error('API success=false');
+
+    // json.products ist schon „sauber“
+    productsData = (json.products || []).filter(p => p.name && String(p.name).trim() !== '');
+
+    console.log('SAMPLE PRODUCT:', productsData[0]);
+
+    document.getElementById('loading').style.display = 'none';
+    renderCategories(productsData);
+    renderAllProducts(productsData);
+    renderOfferProducts();
+
+  } catch (error) {
+    console.error(error);
+    document.getElementById('loading').innerHTML = `
+      <div class="alert alert-error">
+        <span>حدث خطأ في تحميل المنتجات، يرجى المحاولة لاحقاً.</span>
+        <button class="alert-close" onclick="this.parentElement.style.display='none'">&times;</button>
+      </div>`;
+  }
+}
+
 
         // =========================================
         // 🧠 وظيفة معالجة البيانات المستلمة
@@ -1949,38 +2045,48 @@
         }
 
         function isProductActive(product) {
-            return checkBooleanValue(product.product_active);
-        }
+  return checkBooleanValue(product.productActive ?? product.product_active);
+}
 
-        function hasOffer(product) {
-            return checkBooleanValue(product.has_offer);
-        }
+function hasOffer(product) {
+  return checkBooleanValue(product.hasOffer ?? product.has_offer);
+}
 
-        function isOfferActive(product) {
-            if (!checkBooleanValue(product.offer_aktive)) {
-                return false;
-            }
-            
-            const now = new Date();
-            const startDate = product.offer_start_date ? parseGermanDate(product.offer_start_date) : null;
-            const endDate = product.offer_end_date ? parseGermanDate(product.offer_end_date) : null;
-            
-            if (startDate && endDate) {
-                try {
-                    const endOfDay = new Date(endDate);
-                    endOfDay.setHours(23, 59, 59, 999);
-                    
-                    if (now < startDate || now > endOfDay) {
-                        return false;
-                    }
-                } catch (e) {
-                    console.error('خطأ في تحليل التواريخ:', e);
-                    return false;
-                }
-            }
-            
-            return true;
-        }
+function isOfferActive(product) {
+  // ✅ unterstützt alle Varianten:
+  // offerAktive (camelCase aus offer_aktive), offerActive, offer_aktive, offer_active
+  const activeFlag =
+    product.offerAktive ??
+    product.offerActive ??
+    product.offer_aktive ??
+    product.offer_active;
+
+  if (!checkBooleanValue(activeFlag)) return false;
+
+  const now = new Date();
+
+  const startRaw = product.offerStartDate ?? product.offer_start_date;
+  const endRaw   = product.offerEndDate   ?? product.offer_end_date;
+
+  const startDate = startRaw ? parseGermanDate(startRaw) : null;
+  const endDate   = endRaw   ? parseGermanDate(endRaw)   : null;
+
+  if (startDate && endDate) {
+    try {
+      const endOfDay = new Date(endDate);
+      endOfDay.setHours(23, 59, 59, 999);
+      if (now < startDate || now > endOfDay) return false;
+    } catch (e) {
+      console.error('خطأ في تحليل التواريخ:', e);
+      return false;
+    }
+  }
+
+  return true;
+}
+
+
+
 
         // =========================================
         // 🧮 وظائف حساب الأسعار والعروض
@@ -2036,47 +2142,56 @@
         }
 
         function calculatePrice(product) {
-            const originalPrice = parseFloat(product.price) || 0;
-            let finalPrice = originalPrice;
-            let hasDiscount = false;
-            let hasBundle = false;
-            let discountPercent = 0;
-            let bundleInfo = null;
+    const originalPrice = parseFloat(product.price) || 0;
+    let finalPrice = originalPrice;
+    let hasDiscount = false;
+    let hasBundle = false;
+    let discountPercent = 0;
+    let bundleInfo = null;
 
-            if (hasOffer(product) && isOfferActive(product)) {
-                const offerType = (product.offer_type || '').toLowerCase();
-                
-                if (offerType.includes('percent') || offerType.includes('rabatt') || offerType.includes('discount')) {
-                    discountPercent = cleanPercent(product.percent);
-                    if (discountPercent > 0 && discountPercent <= 100) {
-                        finalPrice = originalPrice - (originalPrice * discountPercent / 100);
-                        hasDiscount = true;
-                    }
-                } 
-                else if (offerType.includes('bundle')) {
-                    const bundleQty = parseInt(product.bundle_qty) || 1;
-                    const bundlePrice = parseFloat(product.bundle_price) || originalPrice;
-                    
-                    if (bundleQty > 1 && bundlePrice > 0) {
-                        hasBundle = true;
-                        bundleInfo = {
-                            qty: bundleQty,
-                            price: bundlePrice,
-                            unitPrice: bundlePrice / bundleQty
-                        };
-                    }
-                }
+    // ✅ keys: camelCase ODER snake_case
+    const offerTypeRaw = (product.offerType ?? product.offer_type ?? '').toString().toLowerCase();
+    const percentRaw   = product.percent ?? product.offerPercent ?? product.offer_percent ?? 0;
+    const bundleQtyRaw = product.bundleQty ?? product.bundle_qty ?? 1;
+    const bundlePriceRaw = product.bundlePrice ?? product.bundle_price ?? originalPrice;
+
+    if (hasOffer(product) && isOfferActive(product)) {
+
+        // % Rabatt
+        if (offerTypeRaw.includes('percent') || offerTypeRaw.includes('rabatt') || offerTypeRaw.includes('discount')) {
+            discountPercent = cleanPercent(percentRaw);
+
+            if (discountPercent > 0 && discountPercent <= 100) {
+                finalPrice = originalPrice - (originalPrice * discountPercent / 100);
+                hasDiscount = true;
             }
-
-            return {
-                originalPrice: originalPrice,
-                finalPrice: parseFloat(finalPrice.toFixed(2)),
-                hasDiscount: hasDiscount,
-                hasBundle: hasBundle,
-                bundleInfo: bundleInfo,
-                discountPercent: discountPercent
-            };
         }
+        // Bundle
+        else if (offerTypeRaw.includes('bundle')) {
+            const bundleQty = parseInt(bundleQtyRaw) || 1;
+            const bundlePrice = parseFloat(bundlePriceRaw) || originalPrice;
+
+            if (bundleQty > 1 && bundlePrice > 0) {
+                hasBundle = true;
+                bundleInfo = {
+                    qty: bundleQty,
+                    price: bundlePrice,
+                    unitPrice: bundlePrice / bundleQty
+                };
+            }
+        }
+    }
+
+    return {
+        originalPrice: originalPrice,
+        finalPrice: parseFloat(finalPrice.toFixed(2)),
+        hasDiscount: hasDiscount,
+        hasBundle: hasBundle,
+        bundleInfo: bundleInfo,
+        discountPercent: discountPercent
+    };
+}
+
 
         function calculateCartItemPrice(item) {
             let total = 0;
@@ -2171,21 +2286,29 @@
                 if (pricing.hasDiscount) {
                     priceHTML = `
                         <div class="price-wrapper">
-                            <span class="price-old" dir="ltr">${pricing.originalPrice.toFixed(2)} $</span>
-                            <span class="price-new has-discount" dir="ltr">${pricing.finalPrice.toFixed(2)} $</span>
+                            <span class="price-old" dir="ltr">${pricing.originalPrice.toFixed(2)} ${CURRENCY}</span>
+                            <span class="price-new has-discount" dir="ltr">${pricing.finalPrice.toFixed(2)} ${CURRENCY}</span>
                         </div>`;
                     badgeHTML = `<div class="discount-badge">خصم ${pricing.discountPercent}%</div>`;
                 } else if (pricing.hasBundle) {
                     priceHTML = `
                         <div class="price-wrapper">
-                            <span class="price-old" dir="ltr">${pricing.originalPrice.toFixed(2)} $</span>
-                            <span class="price-new has-discount" dir="ltr">${pricing.bundleInfo.unitPrice.toFixed(2)} $</span>
+                            <span class="price-old" dir="ltr">${pricing.originalPrice.toFixed(2)} ${CURRENCY}</span>
+                            <span class="price-new has-discount" dir="ltr">${pricing.bundleInfo.unitPrice.toFixed(2)} ${CURRENCY}</span>
                         </div>`;
-                    badgeHTML = `<div class="bundle-badge">عرض حزمة</div>`;
+                    badgeHTML = `
+  <div class="bundle-badge">
+    <div>عرض حزمة</div>
+    <div class="bundle-badge-details">
+      <i class="fas fa-boxes"></i>
+      ${pricing.bundleInfo.qty} قطع بسعر ${pricing.bundleInfo.price.toFixed(2)} ${CURRENCY}
+    </div>
+  </div>`;
+
                 } else {
                     priceHTML = `
                         <div class="price-wrapper">
-                            <span class="price-new" dir="ltr">${pricing.originalPrice.toFixed(2)} $</span>
+                            <span class="price-new" dir="ltr">${pricing.originalPrice.toFixed(2)} ${CURRENCY}</span>
                         </div>`;
                 }
                 
@@ -2193,17 +2316,15 @@
                 let inactiveBadge = isInactive ? '<div class="inactive-badge">غير متوفر</div>' : '';
                 let btnState = isInactive ? 'disabled' : '';
                 let btnText = isInactive ? '<i class="fas fa-times"></i> نفذت الكمية' : '<i class="fas fa-plus"></i> أضف إلى السلة';
-                let btnClick = isInactive ? '' : `onclick="addToCart('${p.id || p.name}')"`;
+                let btnClick = isInactive ? '' : `onclick="addToCart('${p.id || p.name}', this)"`;
+
                 
                 const sizeValue = p.sizevalue || '';
                 const sizeUnit = p.sizeunit || '';
                 const sizeDisplay = sizeValue && sizeUnit ? 
                     `<div class="product-size"><i class="fas fa-weight-hanging"></i> الحجم: ${sizeValue} ${sizeUnit}</div>` : '';
                 
-                const bundleDisplay = pricing.hasBundle ? 
-                    `<div class="bundle-info">
-                        <p><i class="fas fa-boxes"></i> ${pricing.bundleInfo.qty} قطع بسعر ${pricing.bundleInfo.price.toFixed(2)}$</p>
-                    </div>` : '';
+                const bundleDisplay = '';
 
                 grid.innerHTML += `
                     <div class="${cardClass}">
@@ -2218,7 +2339,10 @@
                         <div class="product-info">
                             <h3 class="product-title">${p.name}</h3>
                             ${sizeDisplay}
-                            <p class="product-desc">${p.description || ''}</p>
+                            <div class="product-desc-wrapper">
+    <p class="product-desc">${p.description || ''}</p>
+</div>
+
                             ${bundleDisplay}
                             
                             <div class="price-container">
@@ -2266,17 +2390,25 @@
                 if (pricing.hasDiscount) {
                     priceHTML = `
                         <div class="price-wrapper">
-                            <span class="price-old" dir="ltr">${pricing.originalPrice.toFixed(2)} $</span>
-                            <span class="price-new has-discount" dir="ltr">${pricing.finalPrice.toFixed(2)} $</span>
+                            <span class="price-old" dir="ltr">${pricing.originalPrice.toFixed(2)} ${CURRENCY}</span>
+                            <span class="price-new has-discount" dir="ltr">${pricing.finalPrice.toFixed(2)} ${CURRENCY}</span>
                         </div>`;
                     badgeHTML = `<div class="discount-badge">خصم ${pricing.discountPercent}%</div>`;
                 } else if (pricing.hasBundle) {
                     priceHTML = `
                         <div class="price-wrapper">
-                            <span class="price-old" dir="ltr">${pricing.originalPrice.toFixed(2)} $</span>
-                            <span class="price-new has-discount" dir="ltr">${pricing.bundleInfo.unitPrice.toFixed(2)} $</span>
+                            <span class="price-old" dir="ltr">${pricing.originalPrice.toFixed(2)} ${CURRENCY}</span>
+                            <span class="price-new has-discount" dir="ltr">${pricing.bundleInfo.unitPrice.toFixed(2)} ${CURRENCY}</span>
                         </div>`;
-                    badgeHTML = `<div class="bundle-badge">عرض حزمة</div>`;
+                    badgeHTML = `
+  <div class="bundle-badge">
+    <div>عرض حزمة</div>
+    <div class="bundle-badge-details">
+      <i class="fas fa-boxes"></i>
+      ${pricing.bundleInfo.qty} قطع بسعر ${pricing.bundleInfo.price.toFixed(2)} ${CURRENCY}
+    </div>
+  </div>`;
+
                 }
                 
                 const sizeValue = p.sizevalue || '';
@@ -2284,10 +2416,7 @@
                 const sizeDisplay = sizeValue && sizeUnit ? 
                     `<div class="product-size"><i class="fas fa-weight-hanging"></i> الحجم: ${sizeValue} ${sizeUnit}</div>` : '';
                 
-                const bundleDisplay = pricing.hasBundle ? 
-                    `<div class="bundle-info">
-                        <p><i class="fas fa-boxes"></i> ${pricing.bundleInfo.qty} قطع بسعر ${pricing.bundleInfo.price.toFixed(2)}$</p>
-                    </div>` : '';
+                const bundleDisplay = '';
 
                 offersGrid.innerHTML += `
                     <div class="product-card">
@@ -2301,15 +2430,24 @@
                         <div class="product-info">
                             <h3 class="product-title">${p.name}</h3>
                             ${sizeDisplay}
-                            <p class="product-desc">${p.description || ''}</p>
+                            <div class="product-desc-wrapper">
+    <p class="product-desc">${p.description || ''}</p>
+</div>
+
                             ${bundleDisplay}
                             
                             <div class="price-container">
-                                ${priceHTML}
-                                <button class="add-btn" onclick="addToCart('${p.id || p.name}')">
-                                    <i class="fas fa-plus"></i> أضف إلى السلة
-                                </button>
-                            </div>
+    <div class="price-top">
+        ${priceHTML}
+    </div>
+
+    <div class="btn-bottom">
+        <button class="add-btn" onclick="addToCart('${p.id || p.name}', this)">
+            <i class="fas fa-plus"></i> أضف إلى السلة
+        </button>
+    </div>
+</div>
+
                         </div>
                     </div>
                 `;
@@ -2443,45 +2581,49 @@
         // =========================================
         // 🛒 وظائف سلة المشتريات
         // =========================================
-        function addToCart(identifier) {
-            const product = productsData.find(p => (p.id || p.name) == identifier);
-            if (!product) return;
-            
-            const pricing = calculatePrice(product);
-            const existingItem = cart.find(item => item.id === (product.id || product.name));
-            
-            if (existingItem) {
-                existingItem.qty++;
-            } else {
-                const cartItem = {
-                    id: product.id || product.name,
-                    name: product.name,
-                    originalPrice: pricing.originalPrice,
-                    finalPrice: pricing.finalPrice,
-                    hasDiscount: pricing.hasDiscount,
-                    hasBundle: pricing.hasBundle,
-                    bundleInfo: pricing.bundleInfo,
-                    qty: 1,
-                    sizeValue: product.sizevalue,
-                    sizeUnit: product.sizeunit
-                };
-                cart.push(cartItem);
-            }
-            
-            saveCart();
-            updateCartCount();
-            
-            // تأثير إضافة ناجحة
-            const btn = event.target.closest('button');
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-check"></i> تمت الإضافة';
-            btn.style.background = 'var(--accent-color)';
-            
-            setTimeout(() => {
-                btn.innerHTML = originalHTML;
-                btn.style.background = '';
-            }, 2000);
-        }
+        
+
+
+        function addToCart(identifier, btn) {
+    const product = productsData.find(p => (p.id || p.name) == identifier);
+    if (!product) return;
+
+    const pricing = calculatePrice(product);
+    const existingItem = cart.find(item => item.id === (product.id || product.name));
+
+    if (existingItem) {
+        existingItem.qty++;
+    } else {
+        const cartItem = {
+            id: product.id || product.name,
+            name: product.name,
+            originalPrice: pricing.originalPrice,
+            finalPrice: pricing.finalPrice,
+            hasDiscount: pricing.hasDiscount,
+            hasBundle: pricing.hasBundle,
+            bundleInfo: pricing.bundleInfo,
+            qty: 1,
+            sizeValue: product.sizevalue,
+            sizeUnit: product.sizeunit
+        };
+        cart.push(cartItem);
+    }
+
+    saveCart();
+    updateCartCount();
+
+    // تأثير إضافة ناجحة (بدون event global)
+    if (btn) {
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i> تمت الإضافة';
+        btn.style.background = 'var(--accent-color)';
+
+        setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.style.background = '';
+        }, 2000);
+    }
+}
 
         function saveCart() {
             localStorage.setItem('altheeb_cart', JSON.stringify(cart));
