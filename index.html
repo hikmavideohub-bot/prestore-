@@ -488,68 +488,6 @@
             color: var(--accent-color);
             font-weight: 500;    
         }
-        @media (max-width: 1024px) {
-
-  /* Grid dichter */
-  .products-grid {
-    gap: 8px;
-  }
-
-  /* Card extrem kompakt */
-  .product-card {
-    padding: 8px;
-  }
-
-  /* Produktbild rund & klein */
-  .product-card img {
-    width: 80px;
-    height: 80px;
-    object-fit: cover;
-    border-radius: 50%;
-    margin: 0 auto 6px;
-    display: block;
-  }
-
-  /* Titel kleiner */
-  .product-card h3,
-  .product-title {
-    font-size: 13px;
-    line-height: 1.2;
-    text-align: center;
-  }
-
-  /* Preis kleiner */
-  .price,
-  .price-top {
-    font-size: 13px;
-    text-align: center;
-  }
-
-  /* Button mini */
-  .add-btn {
-    font-size: 11px;
-    padding: 5px 8px;
-  }
-
-  /* Badges kleiner */
-  .bundle-badge,
-  .discount-badge {
-    font-size: 10px;
-    padding: 2px 6px;
-  }
-}
-/* 📱 Handy: 3 Produkte pro Zeile */
-@media (max-width: 600px) {
-  .products-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-/* 📲 Tablet: 4 Produkte pro Zeile */
-@media (min-width: 601px) and (max-width: 1024px) {
-  .products-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
 
         .bundle-badge{
   display: flex;
@@ -1419,7 +1357,68 @@
             margin-bottom: var(--space-lg);
             color: var(--border-color);
         }
-    </style>
+        @media (max-width: 1024px) {
+
+  /* Grid dichter */
+  .products-grid {
+    gap: 8px;
+  }
+
+  /* Card extrem kompakt */
+  .product-card {
+    padding: 8px;
+  }
+
+  /* Produktbild rund & klein */
+  .product-card img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin: 0 auto 6px;
+    display: block;
+  }
+
+  /* Titel kleiner */
+  .product-card h3,
+  .product-title {
+    font-size: 13px;
+    line-height: 1.2;
+    text-align: center;
+  }
+
+  /* Preis kleiner */
+  .price,
+  .price-top {
+    font-size: 13px;
+    text-align: center;
+  }
+
+  /* Button mini */
+  .add-btn {
+    font-size: 11px;
+    padding: 5px 8px;
+  }
+
+  /* Badges kleiner */
+  .bundle-badge,
+  .discount-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+}
+@media (max-width: 600px) {
+  .products-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (min-width: 601px) and (max-width: 1024px) {
+  .products-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+    </style> 
 </head>
 <body>
     <!-- 🎨 الهيدر المحسّن -->
