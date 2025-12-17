@@ -1615,6 +1615,149 @@
         .add-btn {
             white-space: nowrap;
         }
+        /* ✅ Warenkorb: mehr Platz für Produkte + Rechnung */
+.cart-modal,
+.cart-container,
+.cart-content {
+  max-width: 720px;
+  width: 92vw;
+}
+
+/* Inhalt im Warenkorb: oben Liste, unten Formular */
+.cart-body,
+.cart-inner,
+.cart-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Produktliste soll wachsen und scrollen */
+.cart-items,
+.cart-items-list {
+  flex: 1;
+  max-height: 45vh;
+  overflow: auto;
+  padding-right: 6px; /* für RTL Scrollbar ok */
+  border-radius: 12px;
+}
+
+/* Formular kompakter */
+.cart-form input,
+.cart-form textarea,
+.checkout-form input,
+.checkout-form textarea {
+  font-size: 14px;
+  padding: 10px 12px;
+}
+
+/* Labels/Überschriften kleiner */
+.cart-form label,
+.checkout-form label {
+  font-size: 13px;
+}
+
+/* Handy: noch stärker optimieren */
+@media (max-width: 600px) {
+  .cart-modal,
+  .cart-container,
+  .cart-content {
+    width: 96vw;
+    max-width: 96vw;
+  }
+
+  .cart-items,
+  .cart-items-list {
+    max-height: 52vh; /* Produkte sind wichtig */
+  }
+
+  .cart-form,
+  .checkout-form {
+    padding: 10px;
+  }
+
+  .cart-form textarea,
+  .checkout-form textarea {
+    min-height: 80px; /* nicht riesig */
+  }
+}
+/* ✅ Cart Summary kompakt + unten fix */
+.cart-summary{
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+  padding: 12px;
+  border-top: 1px solid var(--border-color);
+  z-index: 5;
+}
+
+/* ✅ Gesamtzeile bleibt schön */
+.cart-summary .total-row{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ✅ Einklappbarer Bereich */
+.customer-details summary{
+  cursor: pointer;
+  font-weight: 700;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--light-color);
+  margin-top: 10px;
+}
+
+.customer-details[open] summary{
+  margin-bottom: 10px;
+}
+
+/* ✅ Inputs kleiner */
+.cart-summary input,
+.cart-summary textarea{
+  font-size: 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
+}
+
+/* ✅ Textarea nicht riesig */
+.cart-summary textarea{
+  min-height: 80px;
+  resize: vertical;
+}
+
+/* ✅ Button bleibt sichtbar, nicht zu groß */
+.cart-summary .checkout-btn{
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+}
+
+/* ✅ Handy: noch kompakter */
+@media (max-width: 600px){
+  .cart-summary{
+    padding: 10px;
+  }
+  .customer-details summary{
+    padding: 8px 10px;
+  }
+}
+.remove-item-btn {
+    background: transparent;
+    border: none;
+    color: var(--danger-color);
+    font-size: 14px;
+    padding: 6px;
+    cursor: pointer;
+}
+
+.remove-item-btn:hover {
+    color: #a93226;
+}
+
+
+
 </style>
 </head>
 <body>
@@ -1925,7 +2068,7 @@
                                 </div>
                                 <div class="contact-text">
                                     <h4>العنوان</h4>
-                                    <p>شارع الملك فهد، حي النخيل<br>الرياض، المملكة العربية السعودية</p>
+                                    <p>ارشاف السوق الشعبي<br>حلب الجمهورية العربية السورية</p>
                                 </div>
                             </div>
                             
@@ -1958,7 +2101,7 @@
                                 </div>
                                 <div class="contact-text">
                                     <h4>البريد الإلكتروني</h4>
-                                    <p>info@altheeb-store.com<br>الرد خلال 24 ساعة عمل</p>
+                                    <p>حلااااااااق<br>الرد خلال 24 ساعة عمل</p>
                                 </div>
                             </div>
                         </div>
@@ -2069,23 +2212,28 @@
             </div>
             
             <div class="cart-summary" id="cart-summary" style="display:none;">
-                <div class="total-row">
-                    <span class="total-label">الإجمالي:</span>
-                    <span class="total-value" id="cart-total">0 $</span>
-                </div>
-                
-                <div class="form-group">
-                    <input type="text" id="cust-name" placeholder="الاسم الكريم *" required>
-                </div>
-                
-                <div class="form-group">
-                    <textarea id="cust-address" rows="3" placeholder="العنوان بالتفصيل *" required></textarea>
-                </div>
-                
-                <button class="checkout-btn" onclick="checkout()">
-                    <i class="fab fa-whatsapp"></i> إرسال الطلب عبر واتساب
-                </button>
-            </div>
+  <div class="total-row">
+    <span class="total-label">الإجمالي:</span>
+    <span class="total-value" id="cart-total">0 €</span>
+  </div>
+
+  <details class="customer-details">
+    <summary>بيانات العميل (اضغط للفتح)</summary>
+
+    <div class="form-group">
+      <input type="text" id="cust-name" placeholder="الاسم الكريم *" required>
+    </div>
+
+    <div class="form-group">
+      <textarea id="cust-address" rows="3" placeholder="العنوان بالتفصيل *" required></textarea>
+    </div>
+  </details>
+
+  <button class="checkout-btn" onclick="checkout()">
+    <i class="fab fa-whatsapp"></i> إرسال الطلب عبر واتساب
+  </button>
+</div>
+
         </div>
     </div>
     
@@ -2899,18 +3047,32 @@ function isOfferActive(product) {
                             </div>
                         </div>
                         <div class="item-controls">
-                            <button onclick="changeQty('${item.id}', -1)">-</button>
-                            <span class="item-qty">${item.qty}</span>
-                            <button onclick="changeQty('${item.id}', 1)">+</button>
-                        </div>
+    <button onclick="changeQty('${item.id}', -1)">-</button>
+    <span class="item-qty">${item.qty}</span>
+    <button onclick="changeQty('${item.id}', 1)">+</button>
+
+    <button class="remove-item-btn"
+            onclick="removeFromCart('${item.id}')"
+            title="حذف المنتج">
+        <i class="fas fa-trash"></i>
+    </button>
+</div>
+
                     </div>
                 `;
             });
+    
             
             container.innerHTML = html;
             document.getElementById('cart-total').innerText = total.toFixed(2) + ' $';
         }
 
+        function removeFromCart(id) {
+    cart = cart.filter(item => item.id !== id);
+    saveCart();          // speichert + rendert neu
+    updateCartCount();  // Badge aktualisieren
+}
+ 
         function openCart() {
             renderCartItems();
             document.getElementById('cartModal').classList.add('active');
@@ -3065,18 +3227,37 @@ function isOfferActive(product) {
         // 🗺️ وظائف الخريطة
         // =========================================
         function initMap() {
-            // إحداثيات الموقع الافتراضية (الرياض)
-            const map = L.map('map').setView([24.7136, 46.6753], 13);
-            
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
-            
-            // إضافة علامة للمتجر
-            L.marker([24.7136, 46.6753]).addTo(map)
-                .bindPopup('<b>متجر الذيب</b><br>أجود المنتجات الغذائية')
-                .openPopup();
-        }
+    // 📍 HIER deine Adresse (nur diese 2 Zahlen ändern)
+    const STORE_LOCATION = {
+        lat: 53.49136751671049,
+        lng: 10.182818232328056
+    };
+
+    const map = L.map('map').setView(
+        [STORE_LOCATION.lat, STORE_LOCATION.lng],
+        13
+    );
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // 🔗 Google Maps Link (Navigation)
+    const googleMapsUrl =
+        `https://www.google.com/maps?q=${STORE_LOCATION.lat},${STORE_LOCATION.lng}`;
+
+    L.marker([STORE_LOCATION.lat, STORE_LOCATION.lng]).addTo(map)
+        .bindPopup(`
+            <b>متجر الذيب</b><br>
+            أجود المنتجات الغذائية<br><br>
+            <a href="${googleMapsUrl}" target="_blank"
+               style="color:#1a73e8;font-weight:600;">
+               📍 افتح الموقع في Google Maps
+            </a>
+        `)
+        .openPopup();
+}
+
 
         // =========================================
         // 💬 وظائف إضافية
