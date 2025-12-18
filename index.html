@@ -2392,6 +2392,26 @@ async function fetchProductsDirectly() {
   return checkBooleanValue(product.productActive ?? product.product_active);
 }
 
+function unitLabel(raw) {
+  if (!raw) return '';
+  const k = raw.toString().trim().toLowerCase();
+  const map = {
+    // Gewicht
+    'g': 'غرام', 'gram': 'غرام', 'gramm': 'غرام',
+    'kg': 'كيلوغرام', 'kilo': 'كغ',
+
+    // Volumen
+    'ml': 'مل', 'milliliter': 'مل',
+    'l': 'لتر', 'liter': 'لتر',
+
+    // Stück
+    'pcs': 'قطعة', 'pc': 'قطعة', 'piece': 'قطعة',
+    'stk': 'قطعة', 'stück': 'قطعة', 'stueck': 'قطعة',
+  };
+  return map[k] ?? raw; // fallback, falls unbekannt
+}
+
+        
 function hasOffer(product) {
   return checkBooleanValue(product.hasOffer ?? product.has_offer);
 }
@@ -2664,7 +2684,7 @@ function isOfferActive(product) {
 
                 
                 const sizeValue = p.sizevalue || '';
-                const sizeUnit = p.sizeunit || '';
+                const sizeUnit = unitLabel(p.sizeunit || '');
                 const sizeDisplay = sizeValue && sizeUnit ? 
                     `<div class="product-size"><i class="fas fa-weight-hanging"></i> الحجم: ${sizeValue} ${sizeUnit}</div>` : '';
                 
@@ -2756,7 +2776,7 @@ function isOfferActive(product) {
                 }
                 
                 const sizeValue = p.sizevalue || '';
-                const sizeUnit = p.sizeunit || '';
+                const sizeUnit = unitLabel(p.sizeunit || '');
                 const sizeDisplay = sizeValue && sizeUnit ? 
                     `<div class="product-size"><i class="fas fa-weight-hanging"></i> الحجم: ${sizeValue} ${sizeUnit}</div>` : '';
                 
