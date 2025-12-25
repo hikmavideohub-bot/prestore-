@@ -359,17 +359,30 @@
       color: var(--text);
       line-height: 1.35;
       letter-spacing: .2px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .product-title .desc-toggle {
+      color: var(--secondary);
+      font-size: 0.9rem;
+      transition: var(--transition);
+    }
+    .product-title:hover .desc-toggle {
+      color: var(--secondary-dark);
     }
     .product-desc{
       color: var(--muted);
       font-size: .92rem;
       line-height: 1.7;
-      flex:1;
-      display:-webkit-box;
-      -webkit-line-clamp: 4;
-      -webkit-box-orient: vertical;
-      overflow:hidden;
-      min-height: 3.2em;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    .product-desc.expanded {
+      max-height: 500px;
+      margin-top: 0.5rem;
     }
     .product-size{
       font-size:.9rem;
@@ -559,36 +572,50 @@
     }
     @keyframes spin{to{transform:rotate(360deg)}}
 
-    /* Modal cart */
+    /* Modal cart - COMPLETELY REVISED */
     .modal{
       display:none;
-      position:fixed; inset:0;
+      position:fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       background: rgba(0,0,0,.55);
       z-index: 2000;
-      align-items:center;
-      justify-content:center;
-      padding: 14px;
+      overflow-y: auto; /* Allows scrolling the whole modal */
     }
-    .modal.active{display:flex}
+    .modal.active{
+      display:block;
+    }
     .modal-content{
       background:#fff;
       width: 100%;
       max-width: 650px;
-      max-height: 90vh;
-      border-radius: var(--radius-lg);
-      overflow:hidden;
+      min-height: 100vh; /* Full height on mobile */
+      margin: 0 auto;
+      position: relative;
       display:flex;
       flex-direction:column;
       box-shadow: 0 24px 60px rgba(0,0,0,.25);
-      animation: slideIn .25s ease;
     }
-    @keyframes slideIn{from{opacity:0; transform: translateY(-30px)}to{opacity:1; transform: translateY(0)}}
+    @media (min-width: 768px) {
+      .modal-content{
+        min-height: auto;
+        max-height: 90vh;
+        margin: 2rem auto;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+      }
+    }
 
     .modal-header{
       padding: 1.2rem 1.3rem;
       background: linear-gradient(135deg, var(--primary), var(--primary-dark));
       color:#fff;
       display:flex; align-items:center; justify-content:space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
     .modal-header h3{font-size: 1.35rem; font-weight:900; display:flex; gap:.6rem; align-items:center}
     .close-modal{
@@ -602,18 +629,34 @@
     }
     .close-modal:hover{color: var(--secondary); transform: rotate(6deg);}
 
-    .cart-items{flex:1; overflow:auto; padding: 1.2rem 1.3rem; max-height: 52vh;}
-    .cart-empty{text-align:center; padding: 2rem; color: var(--muted);}
+    .cart-items-container{
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.2rem 1.3rem;
+      min-height: 200px;
+    }
+    .cart-empty{
+      text-align:center; 
+      padding: 2rem; 
+      color: var(--muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 200px;
+    }
     .cart-empty i{font-size: 3rem; margin-bottom: .8rem; color: rgba(122,135,151,.25);}
 
     .cart-item{
-      display:flex; justify-content:space-between; align-items:flex-start;
+      display:flex; 
+      justify-content:space-between; 
+      align-items:flex-start;
       padding: 1rem 0;
       border-bottom: 1px solid rgba(16,24,40,.08);
       gap: 1rem;
     }
     .cart-item:last-child{border-bottom:none}
-    .item-info{flex:1}
+    .item-info{flex:1; min-width: 0;}
     .item-name{font-weight:900; margin-bottom:.2rem; color: var(--primary);}
     .item-size{font-size:.86rem; color: var(--muted); margin-bottom:.35rem;}
     .item-price{color: var(--secondary-dark); font-weight:900; display:flex; align-items:center; gap:.5rem; flex-wrap:wrap}
@@ -655,6 +698,9 @@
       margin-top: .6rem;
     }
 
+    .customer-details{
+      margin-top: .85rem;
+    }
     .customer-details summary{
       cursor:pointer;
       font-weight:900;
@@ -662,13 +708,20 @@
       border-radius: 14px;
       background: rgba(31,58,95,.08);
       border: 1px solid rgba(16,24,40,.10);
-      margin-top: .85rem;
       display:flex;
       align-items:center;
       justify-content:space-between;
     }
+    
+    .checkout-form{
+      padding: 1rem;
+      background: rgba(255,255,255,.9);
+      border: 1px solid rgba(16,24,40,.10);
+      border-top: none;
+      border-bottom-left-radius: 14px;
+      border-bottom-right-radius: 14px;
+    }
 
-    .checkout-form{margin-top: 1.1rem;}
     .form-group{margin-bottom: 1rem;}
     .form-group label{display:block; margin-bottom:.5rem; font-weight:900;}
     .form-control{
@@ -772,7 +825,7 @@
       font-size: .92rem;
     }
 
-    /* Responsive */
+    /* Responsive - IMPROVED MOBILE DISPLAY */
     @media (max-width: 992px){
       .nav-menu{
         position:fixed;
@@ -795,19 +848,169 @@
       #announcement-bar{top: 96px;}
       .category-nav{top: 162px;}
       .contact-pill{display:none;} /* cleaner on mobile */
+      
+      /* Mobile-specific product grid - KACHELSTIL (QUADRATISCH) */
+      .products-grid{
+        grid-template-columns: repeat(3, 1fr); /* 3 products per row */
+        gap: 0.7rem; /* Smaller gap */
+      }
+      
+      /* SQUARE product images for mobile - KACHELSTIL */
+      .product-image-container{
+        height: 0;
+        padding-bottom: 100%; /* Creates a square aspect ratio */
+        position: relative;
+      }
+      
+      .product-image-container img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      
+      /* Hide product description completely on mobile */
+      .product-desc {
+        display: none !important;
+      }
+      
+      /* Hide description toggle on mobile */
+      .product-title .desc-toggle {
+        display: none;
+      }
+      
+      /* Adjust product info padding for smaller cards */
+      .product-info{
+        padding: 0.8rem;
+        gap: 0.4rem;
+      }
+      
+      /* Smaller product title on mobile */
+      .product-title{
+        font-size: 0.85rem;
+        line-height: 1.2;
+        margin-bottom: 0.2rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.2rem;
+      }
+      
+      /* Smaller price on mobile */
+      .price-new{
+        font-size: 1rem;
+      }
+      .price-old {
+        font-size: 0.8rem;
+      }
+      
+      /* Smaller add button on mobile */
+      .add-btn{
+        padding: 0.6rem;
+        font-size: 0.8rem;
+        border-radius: 10px;
+      }
+      
+      /* Smaller badges on mobile */
+      .discount-badge,
+      .bundle-badge,
+      .inactive-badge{
+        font-size: 0.65rem;
+        padding: 0.2rem 0.4rem;
+        border-radius: 6px;
+      }
+      
+      /* Hide size on mobile to save space */
+      .product-size {
+        display: none;
+      }
+      
+      /* Hide bundle info on mobile */
+      .bundle-info {
+        display: none;
+      }
+      
+      /* Price wrapper adjustments */
+      .price-wrapper {
+        flex-direction: column;
+        gap: 0.2rem;
+        align-items: flex-start;
+      }
+      
+      /* Price container adjustments */
+      .price-container {
+        gap: 0.5rem;
+      }
     }
+    
     @media (max-width: 768px){
-      .products-grid{grid-template-columns: repeat(2, 1fr); gap: 1rem;}
+      /* For tablets */
+      .products-grid{
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.7rem;
+      }
+      
+      .product-info{
+        padding: 0.7rem;
+      }
+      
       .timer{width:100%; justify-content:center;}
       .timer-item{min-width: 60px;}
       .timer-value{font-size: 1.8rem;}
-      .product-image-container{height: 190px;}
     }
-    @media (max-width: 576px){
-      .products-grid{grid-template-columns: 1fr;}
+    
+    @media (max-width: 480px){
+      /* For small phones - keep 3 products if screen is wide enough */
+      .products-grid{
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+      }
+      
+      /* Even more compact on very small screens */
+      .product-info{
+        padding: 0.5rem;
+      }
+      
+      .product-title{
+        font-size: 0.75rem;
+      }
+      
+      .add-btn{
+        padding: 0.4rem;
+        font-size: 0.7rem;
+      }
+      
+      .price-new{
+        font-size: 0.9rem;
+      }
+      
       .logo h1{font-size: 1.35rem;}
       .section-header h2{font-size: 1.55rem;}
       .fab{width:52px; height:52px; font-size:1.3rem; bottom: 1rem; left: 1rem;}
+    }
+    
+    @media (max-width: 360px){
+      /* For very small phones */
+      .products-grid{
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+      }
+    }
+    
+    /* Desktop specific - show description toggle only on desktop */
+    @media (min-width: 993px){
+      .product-desc {
+        max-height: 3.2em;
+        display: -webkit-box;
+        -webkit-line-clamp: 4;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .product-desc.expanded {
+        display: block;
+        -webkit-line-clamp: unset;
+      }
     }
   </style>
 </head>
@@ -1034,7 +1237,7 @@
     </section>
   </main>
 
-  <!-- Cart Modal -->
+  <!-- Cart Modal - COMPLETELY REVISED -->
   <div id="cartModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -1042,7 +1245,8 @@
         <button class="close-modal" onclick="closeCart()">&times;</button>
       </div>
 
-      <div id="cart-items" class="cart-items">
+      <div id="cart-items" class="cart-items-container">
+        <!-- Cart items will be loaded here -->
         <div class="cart-empty">
           <i class="fas fa-shopping-basket"></i>
           <p>سلة المشتريات فارغة</p>
@@ -1434,7 +1638,6 @@ async function loadCategories(){
       const cachedArr = cached?.categories || [];
       if (JSON.stringify(freshArr) !== JSON.stringify(cachedArr)) {
         categoriesData = freshArr;
-        // optional: renderCategories(categoriesData);
       }
     },
     CATEGORIES_TTL_MS
@@ -1722,7 +1925,7 @@ function calculateCartItemPrice(item){
 }
 
 /* ========================================
-   🖼️ عرض المنتجات
+   🖼️ عرض المنتجات - UPDATED WITH DESCRIPTION TOGGLE
    ======================================== */
 function productImageHTML(p){
   const url = (p.image || '').toString().trim();
@@ -1740,6 +1943,19 @@ function productImageHTML(p){
       onerror="this.outerHTML='<div class=&quot;placeholder-image&quot;><div class=&quot;ph&quot;>Beispielbild<br><small>صورة توضيحية</small></div></div>'"
     />
   `;
+}
+
+function toggleDescription(element, productId) {
+  const desc = element.closest('.product-info').querySelector('.product-desc');
+  const toggleIcon = element.querySelector('.desc-toggle i');
+  
+  if (desc.classList.contains('expanded')) {
+    desc.classList.remove('expanded');
+    toggleIcon.className = 'fas fa-chevron-down';
+  } else {
+    desc.classList.add('expanded');
+    toggleIcon.className = 'fas fa-chevron-up';
+  }
 }
 
 function renderAllProducts(products){
@@ -1786,6 +2002,7 @@ function renderGrid(containerId, products, isInactive){
   products.forEach(p => {
     const pricing = calculatePrice(p);
     const isActive = isProductActive(p) && !isInactive;
+    const isMobile = window.innerWidth <= 992;
 
     let priceHTML = '';
     let badgeHTML = '';
@@ -1796,14 +2013,14 @@ function renderGrid(containerId, products, isInactive){
           <span class="price-old">${pricing.originalPrice.toFixed(2)} ${CURRENCY}</span>
           <span class="price-new discount">${pricing.finalPrice.toFixed(2)} ${CURRENCY}</span>
         </div>`;
-      badgeHTML = `<div class="discount-badge">خصم ${pricing.discountPercent}%</div>`;
+      badgeHTML = `<div class="discount-badge">${isMobile ? `${pricing.discountPercent}%` : `خصم ${pricing.discountPercent}%`}</div>`;
     } else if (pricing.hasBundle){
       priceHTML = `
         <div class="price-wrapper">
           <span class="price-old">${pricing.originalPrice.toFixed(2)} ${CURRENCY}</span>
           <span class="price-new bundle">${pricing.bundleInfo.unitPrice.toFixed(2)} ${CURRENCY}</span>
         </div>`;
-      badgeHTML = `<div class="bundle-badge">${pricing.bundleText}</div>`;
+      badgeHTML = `<div class="bundle-badge">${isMobile ? pricing.bundleText.replace(' بـ ', '/') : pricing.bundleText}</div>`;
     } else {
       priceHTML = `
         <div class="price-wrapper">
@@ -1814,15 +2031,18 @@ function renderGrid(containerId, products, isInactive){
     const cardClass = isActive ? 'product-card' : 'product-card inactive';
     const inactiveBadge = !isActive ? '<div class="inactive-badge">غير متوفر</div>' : '';
     const btnState = isActive ? '' : 'disabled';
-    const btnText = isActive ? 'أضف للسلة' : 'نفذت الكمية';
+    const btnText = isActive ? (isMobile ? 'أضف' : 'أضف للسلة') : (isMobile ? 'نفذ' : 'نفذت الكمية');
     const btnIcon = isActive ? 'fa-plus' : 'fa-times';
     const btnClick = isActive ? `onclick="addToCart('${escapeAttr(p.id)}', this)"` : '';
 
     const sizeValue = p.sizevalue || '';
     const sizeUnit = p.sizeunit || '';
-    const sizeDisplay = (sizeValue && sizeUnit) ? `<div class="product-size"><i class="fas fa-weight-hanging"></i> الحجم: ${escapeHtml(sizeValue)} ${escapeHtml(sizeUnit)}</div>` : '';
+    const sizeDisplay = (!isMobile && sizeValue && sizeUnit) ? `<div class="product-size"><i class="fas fa-weight-hanging"></i> الحجم: ${escapeHtml(sizeValue)} ${escapeHtml(sizeUnit)}</div>` : '';
 
-    const bundleInfoHTML = pricing.hasBundle ? `<div class="bundle-info">عرض حزمة: ${pricing.bundleText}</div>` : '';
+    const bundleInfoHTML = (!isMobile && pricing.hasBundle) ? `<div class="bundle-info">عرض حزمة: ${pricing.bundleText}</div>` : '';
+    
+    // Check if we're on mobile to decide whether to show description toggle
+    const descToggleHTML = !isMobile ? `<span class="desc-toggle" onclick="toggleDescription(this, '${escapeAttr(p.id)}')"><i class="fas fa-chevron-down"></i></span>` : '';
 
     grid.innerHTML += `
       <div class="${cardClass}">
@@ -1835,7 +2055,10 @@ function renderGrid(containerId, products, isInactive){
         </div>
 
         <div class="product-info">
-          <h3 class="product-title">${escapeHtml(p.name || '')}</h3>
+          <h3 class="product-title" onclick="${!isMobile ? `toggleDescription(this, '${escapeAttr(p.id)}')` : ''}">
+            ${escapeHtml(p.name || '')}
+            ${descToggleHTML}
+          </h3>
           ${sizeDisplay}
           <p class="product-desc">${escapeHtml(p.description || '')}</p>
           ${bundleInfoHTML}
@@ -1873,6 +2096,7 @@ function renderOfferProducts(){
   offersGrid.innerHTML = '';
   offerProducts.forEach(p => {
     const pricing = calculatePrice(p);
+    const isMobile = window.innerWidth <= 992;
 
     let priceHTML = '';
     let badgeHTML = '';
@@ -1883,24 +2107,27 @@ function renderOfferProducts(){
           <span class="price-old">${pricing.originalPrice.toFixed(2)} ${CURRENCY}</span>
           <span class="price-new discount">${pricing.finalPrice.toFixed(2)} ${CURRENCY}</span>
         </div>`;
-      badgeHTML = `<div class="discount-badge">خصم ${pricing.discountPercent}%</div>`;
+      badgeHTML = `<div class="discount-badge">${isMobile ? `${pricing.discountPercent}%` : `خصم ${pricing.discountPercent}%`}</div>`;
     } else if (pricing.hasBundle){
       priceHTML = `
         <div class="price-wrapper">
           <span class="price-old">${pricing.originalPrice.toFixed(2)} ${CURRENCY}</span>
           <span class="price-new bundle">${pricing.bundleInfo.unitPrice.toFixed(2)} ${CURRENCY}</span>
         </div>`;
-      badgeHTML = `<div class="bundle-badge">${pricing.bundleText}</div>`;
+      badgeHTML = `<div class="bundle-badge">${isMobile ? pricing.bundleText.replace(' بـ ', '/') : pricing.bundleText}</div>`;
     } else {
       // should not happen, but keep safe
       priceHTML = `<div class="price-wrapper"><span class="price-new">${pricing.originalPrice.toFixed(2)} ${CURRENCY}</span></div>`;
-      badgeHTML = `<div class="discount-badge">عرض</div>`;
+      badgeHTML = `<div class="discount-badge">${isMobile ? 'عرض' : 'عرض'}</div>`;
     }
 
     const sizeValue = p.sizevalue || '';
     const sizeUnit = p.sizeunit || '';
-    const sizeDisplay = (sizeValue && sizeUnit) ? `<div class="product-size"><i class="fas fa-weight-hanging"></i> الحجم: ${escapeHtml(sizeValue)} ${escapeHtml(sizeUnit)}</div>` : '';
-    const bundleInfoHTML = pricing.hasBundle ? `<div class="bundle-info">عرض حزمة: ${pricing.bundleText}</div>` : '';
+    const sizeDisplay = (!isMobile && sizeValue && sizeUnit) ? `<div class="product-size"><i class="fas fa-weight-hanging"></i> الحجم: ${escapeHtml(sizeValue)} ${escapeHtml(sizeUnit)}</div>` : '';
+    const bundleInfoHTML = (!isMobile && pricing.hasBundle) ? `<div class="bundle-info">عرض حزمة: ${pricing.bundleText}</div>` : '';
+    
+    // Check if we're on mobile
+    const descToggleHTML = !isMobile ? `<span class="desc-toggle" onclick="toggleDescription(this, '${escapeAttr(p.id)}')"><i class="fas fa-chevron-down"></i></span>` : '';
 
     offersGrid.innerHTML += `
       <div class="product-card">
@@ -1910,7 +2137,10 @@ function renderOfferProducts(){
         </div>
 
         <div class="product-info">
-          <h3 class="product-title">${escapeHtml(p.name || '')}</h3>
+          <h3 class="product-title" onclick="${!isMobile ? `toggleDescription(this, '${escapeAttr(p.id)}')` : ''}">
+            ${escapeHtml(p.name || '')}
+            ${descToggleHTML}
+          </h3>
           ${sizeDisplay}
           <p class="product-desc">${escapeHtml(p.description || '')}</p>
           ${bundleInfoHTML}
@@ -1918,7 +2148,7 @@ function renderOfferProducts(){
           <div class="price-container">
             ${priceHTML}
             <button class="add-btn" onclick="addToCart('${escapeAttr(p.id)}', this)">
-              <i class="fas fa-plus"></i> أضف للسلة
+              <i class="fas fa-plus"></i> ${isMobile ? 'أضف' : 'أضف للسلة'}
             </button>
           </div>
         </div>
@@ -2025,7 +2255,7 @@ function showPage(page){
 }
 
 /* ========================================
-   🛒 السلة
+   🛒 السلة - COMPLETELY REVISED
    ======================================== */
 function addToCart(id, btn){
   const product = productsData.find(p => String(p.id) === String(id));
@@ -2079,7 +2309,7 @@ function updateCartCount(){
 
   if (totalItems === 0){
     const empty = document.querySelector('.cart-empty');
-    if (empty) empty.style.display = 'block';
+    if (empty) empty.style.display = 'flex';
     document.getElementById('cart-summary').style.display = 'none';
   } else {
     const empty = document.querySelector('.cart-empty');
@@ -2088,6 +2318,7 @@ function updateCartCount(){
   }
 }
 
+// FIXED: These functions now work properly
 function changeQty(id, delta){
   const item = cart.find(i => String(i.id) === String(id));
   if (item){
@@ -2185,10 +2416,13 @@ function openCart(){
   document.getElementById('cartModal').classList.add('active');
   document.body.style.overflow = 'hidden';
 }
+
 function closeCart(){
   document.getElementById('cartModal').classList.remove('active');
   document.body.style.overflow = 'auto';
 }
+
+// Fix for closing modal when clicking outside
 document.getElementById('cartModal').addEventListener('click', (e) => {
   if (e.target.id === 'cartModal') closeCart();
 });
