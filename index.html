@@ -1,4 +1,3 @@
-html = r"""<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -1138,23 +1137,51 @@ const STORE_ID = 'a083e1e2'; // غيّر هذا فقط لربط متجر آخر
 /* ========================================
    🧠 Cache (LocalStorage) - TTL
    ======================================== */
-const CACHE_TTL_MS = 10 * 60 * 1000; // 10 دقائق
+// ✅ Admin-Bypass: ?nocache=1
+const NO_CACHE = new URLSearchParams(location.search).get('nocache') === '1';
+
+// ✅ Default TTL (wenn du nichts angibst)
+const DEFAULT_CACHE_TTL_MS = 5 * 60 * 1000; // 5 Minuten
+
+// ✅ Pro-Key TTLs (hier kannst du fein steuern)
+const CACHE_TTLS = {
+  websiteStatus: 30 * 1000,   // 30 Sekunden (damit Updates schnell sichtbar sind)
+  products:      60 * 1000,   // 1 Minute
+  categories:    5 * 60 * 1000,
+  bundles:       5 * 60 * 1000,
+  offers:        60 * 1000
+};
+
 function cacheKey(k){ return `cache_${STORE_ID}_${k}`; }
-function cacheGet(k){
+
+function cacheGet(k, ttlMs){
+  if (NO_CACHE) return null;
+
+  const ttl = typeof ttlMs === 'number'
+    ? ttlMs
+    : (CACHE_TTLS[k] ?? DEFAULT_CACHE_TTL_MS);
+
   try{
     const raw = localStorage.getItem(cacheKey(k));
     if(!raw) return null;
+
     const obj = JSON.parse(raw);
-    if(!obj || !obj.ts) return null;
-    if(Date.now() - obj.ts > CACHE_TTL_MS) return null;
+    if(!obj || typeof obj.ts !== 'number') return null;
+
+    if(Date.now() - obj.ts > ttl) return null;
     return obj.data;
-  }catch(e){ return null; }
+  }catch(e){
+    return null;
+  }
 }
+
 function cacheSet(k, data){
+  if (NO_CACHE) return;
   try{
-    localStorage.setItem(cacheKey(k), JSON.stringify({ts: Date.now(), data}));
+    localStorage.setItem(cacheKey(k), JSON.stringify({ ts: Date.now(), data }));
   }catch(e){}
 }
+
 function cacheBust(){
   try{
     Object.keys(localStorage)
@@ -1162,6 +1189,53 @@ function cacheBust(){
       .forEach(k => localStorage.removeItem(k));
   }catch(e){}
 }
+
+// ✅ Lösung 1: Stale-While-Revalidate helper
+// verhindert doppelte Fetches für denselben Key
+const __fetchLocks = new Map();
+
+function stableStringify(x){
+  try { return JSON.stringify(x); } catch { return ''; }
+}
+
+async function fetchWithCache(key, fetcher, onFresh, ttlMs){
+  const cached = cacheGet(key, ttlMs);
+
+  const runFetchLocked = async () => {
+    if (__fetchLocks.has(key)) return __fetchLocks.get(key);
+
+    const p = Promise.resolve()
+      .then(fetcher)
+      .finally(() => __fetchLocks.delete(key));
+
+    __fetchLocks.set(key, p);
+    return p;
+  };
+
+  if (cached != null) {
+    runFetchLocked()
+      .then(fresh => {
+        if (fresh == null) return;
+
+        if (stableStringify(fresh) !== stableStringify(cached)) {
+          cacheSet(key, fresh);
+          if (typeof onFresh === 'function') onFresh(fresh, cached);
+        } else {
+          cacheSet(key, cached);
+        }
+      })
+      .catch(()=>{});
+
+    return cached;
+  }
+
+  const fresh = await runFetchLocked();
+  if (fresh != null) cacheSet(key, fresh);
+  if (typeof onFresh === 'function') onFresh(fresh, null);
+  return fresh;
+}
+
+
 
 /* ========================================
    المتغيرات العامة
@@ -1225,56 +1299,103 @@ window.addEventListener('DOMContentLoaded', async () => {
    ✅ حالة الموقع + رسالة العملاء + التصنيفات
    ======================================== */
 async function loadWebsiteStatus(){
-  const cached = cacheGet('websiteStatus');
-  if (cached && typeof cached.active === 'boolean') return cached.active;
+  // websiteStatus soll schnell aktualisieren
+  const STATUS_TTL_MS = 30 * 1000;
 
-  try{
-    const res = await fetch(`${API_URL}?type=websiteStatus&storeId=${STORE_ID}&_ts=${Date.now()}`, { headers:{'Accept':'application/json'} });
-    const json = await res.json();
-    if (!json.success) {
-      cacheSet('websiteStatus', {active:true});
-      return true;
-    }
-    const data = json.data || {};
-    const active = data.website_active !== false;
-    cacheSet('websiteStatus', {active});
-    if (!active){
-      const loadingEl = document.getElementById('loading');
-      if (loadingEl){
-        loadingEl.innerHTML = `
-          <div style="max-width:720px;margin:0 auto;background:#fff;border-radius:16px;padding:16px;border:1px solid rgba(16,24,40,.08);box-shadow:var(--shadow)">
-            ⛔ هذا المتجر غير متاح حالياً.
-          </div>`;
+  const activeObj = await fetchWithCache(
+    'websiteStatus',
+    async () => {
+      const ts = NO_CACHE ? `&_ts=${Date.now()}` : '';
+      const res = await fetch(
+        `${API_URL}?type=websiteStatus&storeId=${STORE_ID}${ts}`,
+        { headers: { 'Accept': 'application/json' } }
+      );
+
+      const json = await res.json();
+
+      // Wenn API "nicht success" -> Standard: aktiv (wie vorher)
+      if (!json || !json.success) return { active: true };
+
+      const data = json.data || {};
+      const flag = data.website_active ?? data.websiteActive;
+      const active = flag !== false;
+
+      return { active };
+    },
+    (fresh, cached) => {
+      // UI nur updaten wenn sich active wirklich geändert hat
+      const freshActive = !!fresh?.active;
+      const cachedActive = !!cached?.active;
+
+      if (freshActive !== cachedActive) {
+        if (!freshActive) {
+          applyStoreInactiveUI();
+        } else {
+          restoreStoreUIIfNeeded();
+        }
       }
-      const main = document.querySelector('.main-content');
-      if (main) main.style.display = 'none';
-      return false;
-    }
-    return true;
-  }catch(e){
-    console.warn('websiteStatus failed:', e);
-    cacheSet('websiteStatus', {active:true});
+    },
+    STATUS_TTL_MS
+  );
+
+  const active = !!activeObj?.active;
+
+  // sofort (cached oder fresh) anwenden
+  if (!active) {
+    applyStoreInactiveUI();
+    return false;
+  } else {
+    restoreStoreUIIfNeeded();
     return true;
   }
 }
 
-async function loadCustomerMessage(){
-  const cached = cacheGet('customerMessage');
-  if (cached && typeof cached.msg === 'string'){
-    applyCustomerMessage(cached.msg);
-    return;
+function applyStoreInactiveUI(){
+  const loadingEl = document.getElementById('loading');
+  if (loadingEl){
+    loadingEl.innerHTML = `
+      <div style="max-width:720px;margin:0 auto;background:#fff;border-radius:16px;padding:16px;border:1px solid rgba(16,24,40,.08);box-shadow:var(--shadow)">
+        ⛔ هذا المتجر غير متاح حالياً.
+      </div>`;
   }
+  const main = document.querySelector('.main-content');
+  if (main) main.style.display = 'none';
+}
 
-  try{
-    const res = await fetch(`${API_URL}?type=customerMessage&storeId=${STORE_ID}&_ts=${Date.now()}`, { headers:{'Accept':'application/json'} });
-    const json = await res.json();
-    if (!json.success) return;
-    const msg = (json.message || '').toString().trim();
-    cacheSet('customerMessage', {msg});
-    applyCustomerMessage(msg);
-  }catch(e){
-    console.warn('customerMessage failed:', e);
-  }
+function restoreStoreUIIfNeeded(){
+  const main = document.querySelector('.main-content');
+  if (main) main.style.display = '';
+}
+
+
+async function loadCustomerMessage(){
+  const MESSAGE_TTL_MS = 60 * 1000; // 1 Minute
+
+  const data = await fetchWithCache(
+    'customerMessage',
+    async () => {
+      const ts = NO_CACHE ? `&_ts=${Date.now()}` : '';
+      const res = await fetch(
+        `${API_URL}?type=customerMessage&storeId=${STORE_ID}${ts}`,
+        { headers: { 'Accept': 'application/json' } }
+      );
+
+      const json = await res.json();
+      if (!json || !json.success) return { msg: '' };
+
+      const msg = (json.message || '').toString().trim();
+      return { msg };
+    },
+    (fresh, cached) => {
+      // UI nur aktualisieren wenn Nachricht sich geändert hat
+      if ((fresh?.msg || '') !== (cached?.msg || '')) {
+        applyCustomerMessage(fresh?.msg || '');
+      }
+    },
+    MESSAGE_TTL_MS
+  );
+
+  applyCustomerMessage(data?.msg || '');
 }
 
 function applyCustomerMessage(msg){
@@ -1289,21 +1410,37 @@ function applyCustomerMessage(msg){
 }
 
 async function loadCategories(){
-  const cached = cacheGet('categories');
-  if (cached && Array.isArray(cached.categories)){
-    categoriesData = cached.categories;
-    return;
-  }
+  const CATEGORIES_TTL_MS = 5 * 60 * 1000; // 5 Minuten
 
-  try{
-    const res = await fetch(`${API_URL}?type=categories&storeId=${STORE_ID}&_ts=${Date.now()}`, { headers:{'Accept':'application/json'} });
-    const json = await res.json();
-    if (!json.success) return;
-    categoriesData = Array.isArray(json.categories) ? json.categories : [];
-    cacheSet('categories', {categories: categoriesData});
-  }catch(e){
-    console.warn('categories failed:', e);
-  }
+  const data = await fetchWithCache(
+    'categories',
+    async () => {
+      const ts = NO_CACHE ? `&_ts=${Date.now()}` : '';
+      const res = await fetch(
+        `${API_URL}?type=categories&storeId=${STORE_ID}${ts}`,
+        { headers: { 'Accept': 'application/json' } }
+      );
+
+      const json = await res.json();
+      if (!json || !json.success) return { categories: [] };
+
+      return {
+        categories: Array.isArray(json.categories) ? json.categories : []
+      };
+    },
+    (fresh, cached) => {
+      // nur updaten wenn sich wirklich was geändert hat
+      const freshArr = fresh?.categories || [];
+      const cachedArr = cached?.categories || [];
+      if (JSON.stringify(freshArr) !== JSON.stringify(cachedArr)) {
+        categoriesData = freshArr;
+        // optional: renderCategories(categoriesData);
+      }
+    },
+    CATEGORIES_TTL_MS
+  );
+
+  categoriesData = data?.categories || [];
 }
 
 /* ========================================
